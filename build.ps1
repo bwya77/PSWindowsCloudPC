@@ -129,12 +129,56 @@ function Invoke-BuildTask {
     Write-Host ("  staged {0} v{1}" -f $info.Name, $info.Version) -ForegroundColor Green
 }
 
+function Test-PublishedVersion {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Version
+    )
+    $uri = "https://www.powershellgallery.com/api/v2/Packages(Id='$Name',Version='$Version')"
+    try {
+        $null = Invoke-RestMethod -Uri $uri -ErrorAction Stop -TimeoutSec 30
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
 function Invoke-PublishTask {
     Write-Host "==> Publish (PSGallery)" -ForegroundColor Cyan
     if (-not $ApiKey) { throw "ApiKey / `$env:PSGALLERY_API_KEY is required for Publish." }
     if (-not (Test-Path $OutputPath)) { throw "No staged build at $OutputPath. Run -Task Build first." }
-    Publish-Module -Path $OutputPath -NuGetApiKey $ApiKey -Verbose
-    Write-Host "  published" -ForegroundColor Green
+
+    $stagedManifest = Join-Path $OutputPath 'WindowsCloudPC.psd1'
+    $info     = Test-ModuleManifest -Path $stagedManifest
+    $modName  = $info.Name
+    $modVer   = $info.Version.ToString()
+
+    try {
+        Publish-Module -Path $OutputPath -NuGetApiKey $ApiKey -Verbose -ErrorAction Stop
+        Write-Host "  published $modName v$modVer" -ForegroundColor Green
+    }
+    catch {
+        # Gallery occasionally returns a 504 / GatewayTimeout, dotnet auto-retries, then
+        # gets a 409 on the now-published package. Treat that case as success.
+        $msg = $_.Exception.Message
+        $is409 = $msg -match '409' -or $msg -match 'already exists and cannot be modified'
+        if (-not $is409) { throw }
+
+        Write-Host "  Push reported 409; verifying the package landed on the gallery..." -ForegroundColor Yellow
+
+        # Gallery indexing lag — poll for up to ~3 minutes.
+        $deadline = (Get-Date).AddMinutes(3)
+        do {
+            if (Test-PublishedVersion -Name $modName -Version $modVer) {
+                Write-Host "  confirmed $modName v$modVer is published" -ForegroundColor Green
+                return
+            }
+            Start-Sleep -Seconds 10
+        } while ((Get-Date) -lt $deadline)
+
+        throw "Publish reported 409 but $modName v$modVer was not visible on the gallery within 3 minutes."
+    }
 }
 
 # ----- run ----------------------------------------------------------------
