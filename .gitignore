@@ -1,0 +1,21 @@
+# OS / editor
+.vscode/
+.idea/
+*.swp
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Build output
+Output/
+*.nupkg
+
+# Test results
+TestResults.xml
+Coverage.xml
+coverage.xml
+
+# Local secrets
+.env
+*.local.ps1
