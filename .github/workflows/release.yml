@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Publish to PSGallery
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag matches manifest ModuleVersion
+        shell: pwsh
+        run: |
+          $tag      = '${{ github.ref_name }}' -replace '^v',''
+          $manifest = Import-PowerShellDataFile ./WindowsCloudPC.psd1
+          if ($manifest.ModuleVersion -ne $tag) {
+              throw "Tag v$tag does not match manifest ModuleVersion $($manifest.ModuleVersion). Bump the manifest first."
+          }
+          Write-Host "Tag matches manifest version $tag"
+
+      - name: Build (lint + test + stage)
+        shell: pwsh
+        run: ./build.ps1 -Task Build
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: ./build.ps1 -Task Publish
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
