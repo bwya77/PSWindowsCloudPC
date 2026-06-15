@@ -1,33 +1,142 @@
 name: Release
 
+# Automated continuous release.
+#
+# On every push to main that touches functional code (module sources,
+# manifest, or loader), this workflow:
+#   1. Runs lint + Pester tests on Windows AND Ubuntu.
+#   2. Auto-bumps the manifest ModuleVersion (default: patch).
+#   3. Updates CHANGELOG.md by moving [Unreleased] into a dated version
+#      section.
+#   4. Commits the bump, tags v<new-version>, and pushes both.
+#   5. Publishes to PowerShell Gallery.
+#   6. Creates a GitHub release with auto-generated notes.
+#
+# Path filters keep trivial changes (docs, workflow tweaks, build script,
+# test-only edits) from triggering a gallery release. To force a release
+# of, say, a major version bump, use the "Run workflow" button on the
+# Actions tab and pick major/minor/patch.
+#
+# Skip a release for a one-off commit by adding [skip release] to the
+# commit message.
+
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths:
+      - 'Public/**'
+      - 'Private/**'
+      - 'WindowsCloudPC.psd1'
+      - 'WindowsCloudPC.psm1'
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version segment to bump'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Publish to PSGallery
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, '[skip release]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify tag matches manifest ModuleVersion
-        shell: pwsh
-        run: |
-          $tag      = '${{ github.ref_name }}' -replace '^v',''
-          $manifest = Import-PowerShellDataFile ./WindowsCloudPC.psd1
-          if ($manifest.ModuleVersion -ne $tag) {
-              throw "Tag v$tag does not match manifest ModuleVersion $($manifest.ModuleVersion). Bump the manifest first."
-          }
-          Write-Host "Tag matches manifest version $tag"
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/powershell/Modules
+            ~/Documents/PowerShell/Modules
+          key: psmod-${{ runner.os }}-${{ hashFiles('build.ps1', 'WindowsCloudPC.psd1') }}
 
-      - name: Build (lint + test + stage)
+      - name: Lint
+        shell: pwsh
+        run: ./build.ps1 -Task Lint
+
+      - name: Test
+        shell: pwsh
+        run: ./build.ps1 -Task Test
+
+  release:
+    name: Bump, tag, publish
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Bump manifest ModuleVersion
+        id: bump
+        shell: pwsh
+        env:
+          BUMP: ${{ inputs.bump || 'patch' }}
+        run: |
+          $bump = $env:BUMP
+          $manifestPath = './WindowsCloudPC.psd1'
+          $manifest = Import-PowerShellDataFile $manifestPath
+          $current = [version]$manifest.ModuleVersion
+          $maj = $current.Major
+          $min = $current.Minor
+          $pat = if ($current.Build -lt 0) { 0 } else { $current.Build }
+          switch ($bump) {
+            'major' { $maj++; $min = 0; $pat = 0 }
+            'minor' { $min++; $pat = 0 }
+            'patch' { $pat++ }
+          }
+          $new = "$maj.$min.$pat"
+          Write-Host "Bumping $current -> $new ($bump)"
+          $raw = Get-Content $manifestPath -Raw
+          $raw = $raw -replace "ModuleVersion\s*=\s*'[^']+'", "ModuleVersion = '$new'"
+          Set-Content $manifestPath -Value $raw -NoNewline
+          "new_version=$new" | Out-File -Append $env:GITHUB_OUTPUT
+
+      - name: Update CHANGELOG
+        shell: pwsh
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          $v = $env:NEW_VERSION
+          $date = (Get-Date -Format 'yyyy-MM-dd')
+          $path = './CHANGELOG.md'
+          if (-not (Test-Path $path)) { return }
+          $raw = Get-Content $path -Raw
+          if ($raw -match '##\s*\[Unreleased\]\s*\r?\n') {
+            $raw = $raw -replace '##\s*\[Unreleased\]\s*\r?\n', "## [Unreleased]`n`n## [$v] - $date`n"
+            Set-Content $path -Value $raw -NoNewline
+          }
+
+      - name: Build (stage publishable module)
         shell: pwsh
         run: ./build.ps1 -Task Build
+
+      - name: Commit bump + tag
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          git add WindowsCloudPC.psd1 CHANGELOG.md
+          git commit -m "chore(release): v$NEW_VERSION [skip release]"
+          git tag -a "v$NEW_VERSION" -m "v$NEW_VERSION"
+          git push origin main
+          git push origin "v$NEW_VERSION"
 
       - name: Publish to PowerShell Gallery
         shell: pwsh
@@ -38,4 +147,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          name: v${{ steps.bump.outputs.new_version }}
           generate_release_notes: true

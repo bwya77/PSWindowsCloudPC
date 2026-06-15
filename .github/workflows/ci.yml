@@ -1,10 +1,14 @@
 name: CI
 
+# Fast feedback for pull requests and pushes to non-main branches.
+# Pushes to main are handled by release.yml (which also runs lint+test
+# before bumping/publishing) so we skip them here to avoid duplication.
+
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main]
 
 jobs:
   build:
