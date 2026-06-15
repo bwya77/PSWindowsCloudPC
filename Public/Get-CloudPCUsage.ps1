@@ -4,31 +4,32 @@ function Get-CloudPCUsage {
         Reports who is signed in to each Cloud PC and whether it is in use or available.
 
     .DESCRIPTION
-        Combines Get-CloudPC with Intune managedDevice lookups to produce a unified usage view.
+        Calls the beta /reports/getRealTimeRemoteConnectionStatus(cloudPcId='...') endpoint
+        per Cloud PC — the same signal the Intune admin center's "Sign in status" column
+        uses — and enriches it with the current user from the matching Intune managedDevice
+        (dedicated) or sharedDeviceDetail (shared).
 
         UsageStatus values:
-            inUse        A user has an active Windows session on the Cloud PC
-            available    Reachable, no active session
-            unavailable  Not reachable
-            failed       Last connectivity check failed
-            unknown      Service has not yet reported a status
+            inUse         A user is currently signed in (SignInStatus = SignedIn)
+            available     Reachable, nobody signed in (SignInStatus = NotSignedIn)
+            unavailable   The Cloud PC service marks the PC as unreachable
+            failed        Last connectivity check failed
+            unknown       Neither signal returned anything (rare — usually means a brand
+                          new PC whose first telemetry hasn't landed yet)
 
-        How UsageStatus is determined:
-            Shared      Reads connectivityResult.status from the Cloud PC service directly.
-            Dedicated   The Cloud PC service does NOT reliably flip dedicated PCs to 'inUse'
-                        (it usually stays 'available' even with an active session). Instead we
-                        check the matching Intune managedDevice's usersLoggedOn[] collection:
-                        any entry means a user is signed in to the PC, so we report 'inUse'.
-                        connectivityResult.status of 'unavailable' or 'failed' is preserved
-                        as-is (an unreachable PC is unreachable regardless of cached logon).
+        The real-time report is the primary source of truth. If it fails (transient Graph
+        error, beta endpoint hiccup, etc.) the function falls back to the cloudPC's own
+        connectivityResult.status so you still get a useful value.
 
-        CurrentUser* fields:
-            Shared      Populated from sharedDeviceDetail.assignedToUserPrincipalName.
-            Dedicated   Populated from the managedDevice's most recent usersLoggedOn entry,
-                        falling back to userPrincipalName / userDisplayName on the device.
+        CurrentUser* fields are populated independently of UsageStatus:
+            Shared      From sharedDeviceDetail.assignedToUserPrincipalName.
+            Dedicated   From the managedDevice's most recent usersLoggedOn entry, falling
+                        back to userPrincipalName / userDisplayName on the device.
 
     .PARAMETER CloudPC
-        Pipe in objects from Get-CloudPC to enrich a pre-filtered set instead of re-querying.
+        Pipe in WindowsCloudPC.CloudPC objects from Get-CloudPC. Anything else fails
+        parameter binding (so a typo like Get-CloudPCUsage -CloudPC 'test' errors loudly
+        instead of returning blank rows).
 
     .PARAMETER ProvisioningPolicyId
         Limit the report to a single provisioning policy.
@@ -37,11 +38,15 @@ function Get-CloudPCUsage {
         Shared, Dedicated, or All (default).
 
     .EXAMPLE
-        Get-CloudPCUsage | Format-Table CloudPcName,UsageStatus,CurrentUserDisplayName,SessionStart
+        Get-CloudPCUsage | Format-Table CloudPcName,UsageStatus,CurrentUserDisplayName,LastActiveTime
 
     .EXAMPLE
         # Only Cloud PCs with an active session
         Get-CloudPCUsage | Where-Object UsageStatus -eq 'inUse'
+
+    .EXAMPLE
+        # Find idle dedicated PCs (reclamation candidates)
+        Get-CloudPCUsage -Type Dedicated | Where-Object DaysSinceLastSignIn -ge 30
 
     .EXAMPLE
         # Pre-filter then enrich
@@ -51,6 +56,7 @@ function Get-CloudPCUsage {
     [OutputType('WindowsCloudPC.CloudPCUsage')]
     param(
         [Parameter(ValueFromPipeline)]
+        [PSTypeName('WindowsCloudPC.CloudPC')]
         [psobject[]]$CloudPC,
 
         [string]$ProvisioningPolicyId,
@@ -80,9 +86,31 @@ function Get-CloudPCUsage {
         }
 
         foreach ($pc in $bag) {
-            $connectivity    = if ($pc.ConnectivityStatus) { $pc.ConnectivityStatus } else { 'unknown' }
-            $usageStatus     = $connectivity
+            # ---- UsageStatus ------------------------------------------------
+            # Primary signal: real-time remote connection status report.
+            $rt = if ($pc.Id) { Get-CloudPCRealTimeStatus -CloudPcId $pc.Id } else { $null }
 
+            $signInStatus        = $null
+            $daysSinceLastSignIn = $null
+            $lastActiveTime      = $null
+
+            if ($rt) {
+                $signInStatus        = $rt.SignInStatus
+                $daysSinceLastSignIn = $rt.DaysSinceLastSignIn
+                $lastActiveTime      = $rt.LastActiveTime
+
+                $usageStatus = switch ($signInStatus) {
+                    'SignedIn'    { 'inUse' }
+                    'NotSignedIn' { 'available' }
+                    default       { if ($signInStatus) { $signInStatus } else { 'unknown' } }
+                }
+            }
+            else {
+                # Fallback: cloudPC's own connectivityResult.status
+                $usageStatus = if ($pc.ConnectivityStatus) { $pc.ConnectivityStatus } else { 'unknown' }
+            }
+
+            # ---- CurrentUser* enrichment ------------------------------------
             $currentUserUpn  = $null
             $currentUserName = $null
             $currentUserId   = $null
@@ -98,20 +126,12 @@ function Get-CloudPCUsage {
                 }
             }
             else {
-                # Dedicated: the Cloud PC service rarely flips these to 'inUse', so we use the
-                # managedDevice's usersLoggedOn[] as the canonical "someone is signed in" signal.
                 $md = if ($pc.ManagedDeviceId) { Get-CloudPCManagedDevice -ManagedDeviceId $pc.ManagedDeviceId } else { $null }
                 if ($md) {
                     $logon = $md.usersLoggedOn |
                         Sort-Object { [datetime]$_.lastLogOnDateTime } -Descending |
                         Select-Object -First 1
                     if ($logon) {
-                        # A user is signed in. Promote to 'inUse' unless the PC is genuinely
-                        # offline ('unavailable' / 'failed'), in which case keep that honest.
-                        if ($connectivity -notin @('unavailable','failed')) {
-                            $usageStatus = 'inUse'
-                        }
-
                         $u = Resolve-CloudPCUser -IdOrUpn $logon.userId
                         $currentUserUpn  = $u.Upn
                         $currentUserName = $u.DisplayName
@@ -119,13 +139,11 @@ function Get-CloudPCUsage {
                         $sessionStart    = ([datetime]$logon.lastLogOnDateTime).ToLocalTime()
                     }
                     else {
-                        # No logon history — fall back to the dedicated user assignment.
                         $currentUserUpn  = $md.userPrincipalName
                         $currentUserName = $md.userDisplayName
                     }
                 }
                 else {
-                    # No managedDevice yet — fall back to the cloudPC's own assignment.
                     $currentUserUpn = $pc.AssignedUserUpn
                 }
             }
@@ -137,6 +155,9 @@ function Get-CloudPCUsage {
                 ProvisioningPolicyName = $pc.ProvisioningPolicyName
                 ProvisioningStatus     = $pc.ProvisioningStatus
                 UsageStatus            = $usageStatus
+                SignInStatus           = $signInStatus
+                DaysSinceLastSignIn    = $daysSinceLastSignIn
+                LastActiveTime         = $lastActiveTime
                 AssignedUserUpn        = $pc.AssignedUserUpn
                 CurrentUserUpn         = $currentUserUpn
                 CurrentUserDisplayName = $currentUserName

@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Breaking**: `Get-CloudPCUsage -CloudPC` now strictly accepts only objects with
+  PSTypeName `WindowsCloudPC.CloudPC` (the output of `Get-CloudPC`). Passing
+  arbitrary strings or hashtables now fails fast at parameter binding instead of
+  silently returning blank rows.
+- `Get-CloudPCUsage` now uses the beta
+  `/reports/getRealTimeRemoteConnectionStatus(cloudPcId='...')` report as its
+  primary signal for `UsageStatus`, for **both** shared and dedicated Cloud PCs.
+  `SignInStatus` (`SignedIn`/`NotSignedIn`) drives `UsageStatus`
+  (`inUse`/`available`). `connectivityResult.status` is now a fallback used only
+  if the report endpoint is unreachable. PCs that have never been signed into
+  now correctly report `available` / `NotSignedIn` (previously `unknown`).
+- `Get-CloudPCUsage` output now includes three new fields between `UsageStatus`
+  and `AssignedUserUpn`: `SignInStatus`, `DaysSinceLastSignIn`, `LastActiveTime`.
+  Use `DaysSinceLastSignIn` to find idle PCs without parsing dates.
+
+### Removed
+- **Breaking**: `Get-CloudPCUsageBeta` has been removed. Its functionality (the
+  real-time report signal) is now the default behavior of `Get-CloudPCUsage`.
+  Migrate: replace any `Get-CloudPCUsageBeta` calls with `Get-CloudPCUsage`.
+
+### Fixed
+- `Get-CloudPCRealTimeStatus` (internal helper) now correctly handles the
+  `application/octet-stream` response that the Graph beta report endpoint
+  returns. Previously every call failed with "Please specify '-OutputFilePath'
+  or '-InferOutputFileName'" and the function silently returned `$null`.
 
 ## [0.1.1] - 2026-06-15
 ### Added

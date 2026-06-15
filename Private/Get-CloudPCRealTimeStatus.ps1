@@ -29,27 +29,48 @@ function Get-CloudPCRealTimeStatus {
     $escaped = [uri]::EscapeDataString($CloudPcId)
     $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/reports/getRealTimeRemoteConnectionStatus(cloudPcId='$escaped')"
 
+    # This endpoint returns application/octet-stream, which Invoke-MgGraphRequest
+    # refuses to materialize in-memory ("Please specify '-OutputFilePath' or
+    # '-InferOutputFileName'"). Spool to a temp file, read, then delete.
+    $tmp = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "wcpc-rtrcs-$([guid]::NewGuid().ToString('N')).json")
     try {
-        $response = Invoke-MgGraphRequest -Method GET -Uri $uri -ErrorAction Stop
+        try {
+            Invoke-MgGraphRequest -Method GET -Uri $uri -OutputFilePath $tmp -ErrorAction Stop | Out-Null
+        }
+        catch {
+            Write-Verbose "Get-CloudPCRealTimeStatus: $CloudPcId failed ($($_.Exception.Message))"
+            return $null
+        }
+
+        if (-not (Test-Path -LiteralPath $tmp)) { return $null }
+        $json = Get-Content -LiteralPath $tmp -Raw -ErrorAction Stop
+        if ([string]::IsNullOrWhiteSpace($json)) { return $null }
+
+        try { $payload = $json | ConvertFrom-Json -AsHashtable -ErrorAction Stop }
+        catch {
+            Write-Verbose "Get-CloudPCRealTimeStatus: $CloudPcId returned unparseable JSON ($($_.Exception.Message))"
+            return $null
+        }
     }
-    catch {
-        Write-Verbose "Get-CloudPCRealTimeStatus: $CloudPcId failed ($($_.Exception.Message))"
-        return $null
+    finally {
+        if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
     }
 
-    if (-not $response) { return $null }
+    if (-not $payload.Schema) { return $null }
 
-    # Server sometimes returns application/octet-stream — coerce to a parsed object.
-    $payload = $response
-    if ($payload -is [byte[]]) {
-        $payload = [System.Text.Encoding]::UTF8.GetString($payload) | ConvertFrom-Json -AsHashtable
-    }
-    elseif ($payload -is [string]) {
-        $payload = $payload | ConvertFrom-Json -AsHashtable
-    }
-
-    if (-not $payload.Schema -or -not $payload.Values -or $payload.Values.Count -eq 0) {
-        return $null
+    # TotalRowCount=0 / empty Values means the PC has no sign-in history yet
+    # (e.g. freshly provisioned, never used). Semantically that's "not signed
+    # in / available", not "unknown" — return a synthetic row so the caller
+    # doesn't have to special-case it.
+    if (-not $payload.Values -or $payload.Values.Count -eq 0) {
+        return [pscustomobject]@{
+            ManagedDeviceName   = $null
+            CloudPcId           = $CloudPcId
+            DaysSinceLastSignIn = $null
+            SignInStatus        = 'NotSignedIn'
+            LastActiveTime      = $null
+            Raw                 = $payload
+        }
     }
 
     $row = $payload.Values[0]
