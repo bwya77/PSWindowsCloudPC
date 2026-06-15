@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Get-CloudPCUsageBeta` (experimental) — uses the beta
+  `/reports/getRealTimeRemoteConnectionStatus(cloudPcId='...')` endpoint to
+  return a definitive "is anyone connected right now" signal. Maps
+  `SignInStatus` (`SignedIn` / `NotSignedIn`) to `UsageStatus` and surfaces
+  `DaysSinceLastSignIn` + `LastActiveTime` for finding idle Cloud PCs.
+  Marked `Beta` because the endpoint is on Graph beta; once stable this will
+  fold into `Get-CloudPCUsage`.
+
 ## [0.1.0] - 2026-06-15
 
 ### Changed

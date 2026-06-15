@@ -14,7 +14,8 @@
         'Connect-CloudPC',
         'Get-CloudPC',
         'Get-CloudPCProvisioningPolicy',
-        'Get-CloudPCUsage'
+        'Get-CloudPCUsage',
+        'Get-CloudPCUsageBeta'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
