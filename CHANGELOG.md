@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCByProvisioningPolicy` — returns one row per provisioning policy
+  with a `CloudPCCount` and a nested `CloudPCs` array (real, fetched per-policy
+  via `Get-CloudPC`). Empty policies are included with `CloudPCCount = 0` so
+  you can spot drift.
+
+### Changed
+- **Breaking**: `Get-CloudPC` no longer emits `ConnectivityStatus` or
+  `SessionStartDateTime` as top-level properties. The data is unchanged and
+  still available under `.Raw.connectivityResult.status` /
+  `.Raw.sharedDeviceDetail.sessionStartDateTime`. `Get-CloudPCUsage`
+  consumes these from `.Raw` internally and is unaffected.
+- **Breaking**: `Get-CloudPCProvisioningPolicy` no longer accepts
+  `-IncludeCloudPCCount` / `-IncludeCloudPCs`, and no longer emits the
+  always-null `CloudPCCount` and `CloudPCs` properties. Use the new
+  `Get-CloudPCByProvisioningPolicy` for those scenarios.
 
 ## [0.1.2] - 2026-06-15
 ### Changed

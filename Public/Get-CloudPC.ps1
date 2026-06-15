@@ -78,8 +78,6 @@ function Get-CloudPC {
                 ProvisioningStatus     = $raw.status
                 ServicePlanName        = $raw.servicePlanName
                 AssignedUserUpn        = if ($isShared) { $raw.sharedDeviceDetail.assignedToUserPrincipalName } else { $raw.userPrincipalName }
-                ConnectivityStatus     = $raw.connectivityResult.status
-                SessionStartDateTime   = if ($isShared -and $raw.sharedDeviceDetail.sessionStartDateTime) { ([datetime]$raw.sharedDeviceDetail.sessionStartDateTime).ToLocalTime() } else { $null }
                 ManagedDeviceId        = $raw.managedDeviceId
                 AadDeviceId            = $raw.aadDeviceId
                 LastModifiedDateTime   = if ($raw.lastModifiedDateTime) { ([datetime]$raw.lastModifiedDateTime).ToLocalTime() } else { $null }

@@ -40,8 +40,9 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | --- | --- |
 | `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
-| `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`. Handles shared (frontline) and dedicated. |
-| `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. `-IncludeCloudPCs` / `-IncludeCloudPCCount`. |
+| `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`, plus `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. Works for shared **and** dedicated. |
+| `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
+| `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 
 ## Quick start
 
@@ -49,13 +50,21 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 Connect-CloudPC
 
 # Everything in the tenant
-Get-CloudPCUsage | Format-Table CloudPcName,ProvisioningType,UsageStatus,CurrentUserDisplayName,SessionStart
+Get-CloudPCUsage | Format-Table CloudPcName,ProvisioningType,UsageStatus,SignInStatus,DaysSinceLastSignIn,CurrentUserDisplayName,SessionStart
 
 # Only Cloud PCs with an active session
 Get-CloudPCUsage | Where-Object UsageStatus -eq 'inUse'
 
-# One provisioning policy
-Get-CloudPCProvisioningPolicy -Name 'W365-Flex-Shared' | Get-CloudPCUsage
+# Idle Cloud PCs (no sign-in in 14+ days)
+Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14 | Sort-Object DaysSinceLastSignIn -Descending
+
+# Per-policy breakdown
+Get-CloudPCByProvisioningPolicy | Format-Table DisplayName,ProvisioningType,CloudPCCount
+
+# Drill into a single policy's Cloud PCs
+Get-CloudPCByProvisioningPolicy |
+    Select-Object DisplayName -ExpandProperty CloudPCs |
+    Format-Table DisplayName,Name,ProvisioningStatus,AssignedUserUpn
 
 # Pipeline composition
 Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.csv -NoTypeInformation
@@ -63,10 +72,16 @@ Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.cs
 
 ## How `UsageStatus` is determined
 
-| Provisioning type | Signal |
-| --- | --- |
-| Shared (Entra-group) | `connectivityResult.status` from the Cloud PC service. |
-| Dedicated | Promoted to `inUse` when the matching Intune managedDevice has any `usersLoggedOn[]` entry. (The Cloud PC service rarely flips dedicated PCs to `inUse` on its own.) `unavailable` / `failed` are always preserved. |
+`Get-CloudPCUsage` uses the Graph beta `/reports/getRealTimeRemoteConnectionStatus`
+report as its **primary** signal for every Cloud PC (shared and dedicated). The
+report's `SignInStatus` (`SignedIn` / `NotSignedIn`) maps to `UsageStatus`
+(`inUse` / `available`), and the report also gives you `DaysSinceLastSignIn` and
+`LastActiveTime` for free.
+
+If the report endpoint is unreachable for a given PC, `Get-CloudPCUsage` falls
+back to the Cloud PC's own `connectivityResult.status`. Cloud PCs that have
+never been signed into (no sign-in history yet) are surfaced as
+`available` / `NotSignedIn` rather than `unknown`.
 
 ## Releases
 

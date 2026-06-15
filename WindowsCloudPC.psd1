@@ -13,6 +13,7 @@
     FunctionsToExport    = @(
         'Connect-CloudPC',
         'Get-CloudPC',
+        'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCUsage'
     )

@@ -8,28 +8,21 @@ function Get-CloudPCProvisioningPolicy {
         and returns normalized PSCustomObjects (PSTypeName = 'WindowsCloudPC.ProvisioningPolicy').
 
         Each policy exposes a ProvisioningPolicyId property (mirror of Id) so it pipes cleanly
-        into Get-CloudPC and Get-CloudPCUsage:
+        into Get-CloudPC, Get-CloudPCUsage, and Get-CloudPCByProvisioningPolicy:
 
             Get-CloudPCProvisioningPolicy | Get-CloudPC
             Get-CloudPCProvisioningPolicy | Get-CloudPCUsage
+            Get-CloudPCProvisioningPolicy | Get-CloudPCByProvisioningPolicy
+
+        To see which Cloud PCs belong to which policy (and a count), use
+        Get-CloudPCByProvisioningPolicy.
 
     .PARAMETER Id
         Optional: fetch a single policy by id. Accepts pipeline input by property name
         (binds to Id / ProvisioningPolicyId).
 
-    .PARAMETER IncludeCloudPCCount
-        Adds a CloudPCCount property by querying Cloud PCs for each policy.
-
-    .PARAMETER IncludeCloudPCs
-        Adds a CloudPCs property containing the full Get-CloudPC objects for each policy.
-        Implies -IncludeCloudPCCount.
-
     .EXAMPLE
         Get-CloudPCProvisioningPolicy | Format-Table DisplayName,ProvisioningType,AssignedGroupNames
-
-    .EXAMPLE
-        Get-CloudPCProvisioningPolicy -IncludeCloudPCCount |
-            Format-Table DisplayName,ProvisioningType,CloudPCCount
 
     .EXAMPLE
         # Usage report grouped by policy
@@ -39,19 +32,15 @@ function Get-CloudPCProvisioningPolicy {
             Format-Table Name,Count
 
     .EXAMPLE
-        Get-CloudPCProvisioningPolicy -Id 8e8a545f-6168-4472-9466-9f05520a5eb3 -IncludeCloudPCs |
-            Select-Object -ExpandProperty CloudPCs
+        # Cloud PCs grouped under each policy
+        Get-CloudPCByProvisioningPolicy | Format-Table DisplayName,ProvisioningType,CloudPCCount
     #>
     [CmdletBinding()]
     [OutputType('WindowsCloudPC.ProvisioningPolicy')]
     param(
         [Parameter(Position = 0, ValueFromPipelineByPropertyName)]
         [Alias('ProvisioningPolicyId')]
-        [string]$Id,
-
-        [switch]$IncludeCloudPCCount,
-
-        [switch]$IncludeCloudPCs
+        [string]$Id
     )
 
     begin {
@@ -85,13 +74,6 @@ function Get-CloudPCProvisioningPolicy {
                 }
             }
 
-            $cpcs     = $null
-            $cpcCount = $null
-            if ($IncludeCloudPCs -or $IncludeCloudPCCount) {
-                $cpcs     = @( Get-CloudPC -ProvisioningPolicyId $p.id )
-                $cpcCount = $cpcs.Count
-            }
-
             $domainJoinTypes = @()
             if ($p.domainJoinConfigurations) {
                 $domainJoinTypes = $p.domainJoinConfigurations | ForEach-Object { $_.domainJoinType } | Where-Object { $_ }
@@ -116,8 +98,6 @@ function Get-CloudPCProvisioningPolicy {
                 Assignments             = $assignmentInfo
                 AssignedGroupIds        = @($assignmentInfo | Where-Object { $_.GroupId } | Select-Object -ExpandProperty GroupId)
                 AssignedGroupNames      = @($assignmentInfo | Where-Object { $_.GroupName } | Select-Object -ExpandProperty GroupName)
-                CloudPCCount            = $cpcCount
-                CloudPCs                = $cpcs
                 Raw                     = $p
             }
 

@@ -65,9 +65,11 @@ Describe 'Get-CloudPCUsage' {
                 ProvisioningPolicyName = 'Shared Policy'
                 ProvisioningStatus     = 'provisioned'
                 AssignedUserUpn        = 'brad@example.com'
-                ConnectivityStatus     = 'available'
-                SessionStartDateTime   = (Get-Date)
                 ManagedDeviceId        = 'mdm-shared-1'
+                Raw                    = @{
+                    connectivityResult = @{ status = 'available' }
+                    sharedDeviceDetail = @{ sessionStartDateTime = (Get-Date).ToString('o') }
+                }
             }
 
             Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-shared-1' } -MockWith {
@@ -138,31 +140,31 @@ Describe 'Get-CloudPCUsage' {
             Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-noreport' } -MockWith { $null }
 
             $script:DedicatedActive = [pscustomobject]@{
-                PSTypeName         = 'WindowsCloudPC.CloudPC'
-                Id                 = 'cpc-dedicated-active'
-                Name               = 'CFD-ACTIVE'
-                ProvisioningType   = 'Dedicated'
-                AssignedUserUpn    = 'alice@example.com'
-                ConnectivityStatus = 'available'
-                ManagedDeviceId    = 'mdm-dedicated'
+                PSTypeName       = 'WindowsCloudPC.CloudPC'
+                Id               = 'cpc-dedicated-active'
+                Name             = 'CFD-ACTIVE'
+                ProvisioningType = 'Dedicated'
+                AssignedUserUpn  = 'alice@example.com'
+                ManagedDeviceId  = 'mdm-dedicated'
+                Raw              = @{ connectivityResult = @{ status = 'available' } }
             }
             $script:DedicatedIdle = [pscustomobject]@{
-                PSTypeName         = 'WindowsCloudPC.CloudPC'
-                Id                 = 'cpc-dedicated-idle'
-                Name               = 'CFD-IDLE'
-                ProvisioningType   = 'Dedicated'
-                AssignedUserUpn    = 'alice@example.com'
-                ConnectivityStatus = 'available'
-                ManagedDeviceId    = 'mdm-dedicated'
+                PSTypeName       = 'WindowsCloudPC.CloudPC'
+                Id               = 'cpc-dedicated-idle'
+                Name             = 'CFD-IDLE'
+                ProvisioningType = 'Dedicated'
+                AssignedUserUpn  = 'alice@example.com'
+                ManagedDeviceId  = 'mdm-dedicated'
+                Raw              = @{ connectivityResult = @{ status = 'available' } }
             }
             $script:DedicatedNoReport = [pscustomobject]@{
-                PSTypeName         = 'WindowsCloudPC.CloudPC'
-                Id                 = 'cpc-dedicated-noreport'
-                Name               = 'CFD-NOREPORT'
-                ProvisioningType   = 'Dedicated'
-                AssignedUserUpn    = 'alice@example.com'
-                ConnectivityStatus = 'inUse'
-                ManagedDeviceId    = 'mdm-dedicated'
+                PSTypeName       = 'WindowsCloudPC.CloudPC'
+                Id               = 'cpc-dedicated-noreport'
+                Name             = 'CFD-NOREPORT'
+                ProvisioningType = 'Dedicated'
+                AssignedUserUpn  = 'alice@example.com'
+                ManagedDeviceId  = 'mdm-dedicated'
+                Raw              = @{ connectivityResult = @{ status = 'inUse' } }
             }
         }
 

@@ -106,8 +106,9 @@ function Get-CloudPCUsage {
                 }
             }
             else {
-                # Fallback: cloudPC's own connectivityResult.status
-                $usageStatus = if ($pc.ConnectivityStatus) { $pc.ConnectivityStatus } else { 'unknown' }
+                # Fallback: cloudPC's own connectivityResult.status (from .Raw)
+                $connStatus = $pc.Raw.connectivityResult.status
+                $usageStatus = if ($connStatus) { $connStatus } else { 'unknown' }
             }
 
             # ---- CurrentUser* enrichment ------------------------------------
@@ -118,7 +119,10 @@ function Get-CloudPCUsage {
 
             if ($pc.ProvisioningType -eq 'Shared') {
                 $currentUserUpn = $pc.AssignedUserUpn
-                $sessionStart   = $pc.SessionStartDateTime
+                $rawSessionStart = $pc.Raw.sharedDeviceDetail.sessionStartDateTime
+                if ($rawSessionStart) {
+                    try { $sessionStart = ([datetime]$rawSessionStart).ToLocalTime() } catch { $sessionStart = $null }
+                }
                 if ($currentUserUpn) {
                     $u = Resolve-CloudPCUser -IdOrUpn $currentUserUpn
                     $currentUserName = $u.DisplayName
