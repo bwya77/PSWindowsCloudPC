@@ -25,31 +25,37 @@ function Connect-CloudPC {
         [switch]$Force
     )
 
-    if (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Authentication)) {
-        throw "Microsoft.Graph.Authentication is required. Install: Install-Module Microsoft.Graph.Authentication -Scope CurrentUser"
-    }
-    Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
-
-    $defaultScopes = @(
-        'CloudPC.Read.All',
-        'DeviceManagementManagedDevices.Read.All',
-        'User.Read.All',
-        'Group.Read.All'
-    )
-    $scopes = @($defaultScopes + $AdditionalScopes | Where-Object { $_ } | Select-Object -Unique)
-
-    if ($Force) {
-        try { Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null }
-        catch { Write-Verbose "Disconnect-MgGraph: $($_.Exception.Message)" }
+    begin {
+        if (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Authentication)) {
+            throw "Microsoft.Graph.Authentication is required. Install: Install-Module Microsoft.Graph.Authentication -Scope CurrentUser"
+        }
+        Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
     }
 
-    $ctx = Get-MgContext
-    $missing = $scopes | Where-Object { -not $ctx -or $_ -notin $ctx.Scopes }
-    if ($missing) {
-        Write-Verbose "Connecting to Microsoft Graph with scopes: $($scopes -join ', ')"
-        Connect-MgGraph -Scopes $scopes -NoWelcome | Out-Null
+    process {
+        $defaultScopes = @(
+            'CloudPC.Read.All',
+            'DeviceManagementManagedDevices.Read.All',
+            'User.Read.All',
+            'Group.Read.All'
+        )
+        $scopes = @($defaultScopes + $AdditionalScopes | Where-Object { $_ } | Select-Object -Unique)
+
+        if ($Force) {
+            try { Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null }
+            catch { Write-Verbose "Disconnect-MgGraph: $($_.Exception.Message)" }
+        }
+
         $ctx = Get-MgContext
+        $missing = $scopes | Where-Object { -not $ctx -or $_ -notin $ctx.Scopes }
+        if ($missing) {
+            Write-Verbose "Connecting to Microsoft Graph with scopes: $($scopes -join ', ')"
+            Connect-MgGraph -Scopes $scopes -NoWelcome | Out-Null
+            $ctx = Get-MgContext
+        }
+
+        $ctx
     }
 
-    $ctx
+    end { }
 }

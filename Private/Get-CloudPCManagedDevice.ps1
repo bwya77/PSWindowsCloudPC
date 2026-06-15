@@ -8,14 +8,20 @@ function Get-CloudPCManagedDevice {
         [Parameter(Mandatory)][string]$ManagedDeviceId
     )
 
-    $select = 'id,deviceName,userPrincipalName,userDisplayName,lastSyncDateTime,usersLoggedOn,azureADDeviceId'
-    $uri = "https://graph.microsoft.com/beta/deviceManagement/managedDevices('$ManagedDeviceId')?`$select=$select"
+    begin { }
 
-    try {
-        Invoke-MgGraphRequest -Method GET -Uri $uri
+    process {
+        $select = 'id,deviceName,userPrincipalName,userDisplayName,lastSyncDateTime,usersLoggedOn,azureADDeviceId'
+        $uri = "https://graph.microsoft.com/beta/deviceManagement/managedDevices('$ManagedDeviceId')?`$select=$select"
+
+        try {
+            Invoke-MgGraphRequest -Method GET -Uri $uri
+        }
+        catch {
+            Write-Verbose "Get-CloudPCManagedDevice: $ManagedDeviceId not found ($($_.Exception.Message))"
+            $null
+        }
     }
-    catch {
-        Write-Verbose "Get-CloudPCManagedDevice: $ManagedDeviceId not found ($($_.Exception.Message))"
-        $null
-    }
+
+    end { }
 }

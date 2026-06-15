@@ -85,4 +85,6 @@ function Get-CloudPC {
             }
         }
     }
+
+    end { }
 }

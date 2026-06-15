@@ -9,10 +9,16 @@ function Invoke-GraphPaged {
         [hashtable]$Headers = @{ ConsistencyLevel = 'eventual' }
     )
 
-    $next = $Uri
-    while ($next) {
-        $resp = Invoke-MgGraphRequest -Method GET -Uri $next -Headers $Headers
-        if ($resp.value) { $resp.value | Write-Output }
-        $next = $resp.'@odata.nextLink'
+    begin { }
+
+    process {
+        $next = $Uri
+        while ($next) {
+            $resp = Invoke-MgGraphRequest -Method GET -Uri $next -Headers $Headers
+            if ($resp.value) { $resp.value | Write-Output }
+            $next = $resp.'@odata.nextLink'
+        }
     }
+
+    end { }
 }

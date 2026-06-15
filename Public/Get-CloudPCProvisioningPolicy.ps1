@@ -104,4 +104,6 @@ function Get-CloudPCProvisioningPolicy {
             [pscustomobject]$obj
         }
     }
+
+    end { }
 }

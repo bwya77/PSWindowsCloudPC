@@ -10,29 +10,47 @@ function Resolve-CloudPCUser {
         [Parameter(Mandatory)][string]$IdOrUpn
     )
 
-    if ([string]::IsNullOrWhiteSpace($IdOrUpn)) { return $null }
-    if ($script:CloudPCUserCache.ContainsKey($IdOrUpn)) { return $script:CloudPCUserCache[$IdOrUpn] }
+    begin { }
 
-    try {
-        $escaped = [uri]::EscapeDataString($IdOrUpn)
-        $u = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/$escaped`?`$select=id,userPrincipalName,displayName"
-        $info = [pscustomobject]@{
-            Id          = $u.id
-            Upn         = $u.userPrincipalName
-            DisplayName = $u.displayName
+    process {
+        if ([string]::IsNullOrWhiteSpace($IdOrUpn)) {
+            return
         }
-    }
-    catch {
-        Write-Verbose "Resolve-CloudPCUser: could not resolve '$IdOrUpn' ($($_.Exception.Message))"
-        $info = [pscustomobject]@{ Id = $null; Upn = $IdOrUpn; DisplayName = $null }
+        if ($script:CloudPCUserCache.ContainsKey($IdOrUpn)) {
+            $script:CloudPCUserCache[$IdOrUpn]
+            return
+        }
+
+        try {
+            $escaped = [uri]::EscapeDataString($IdOrUpn)
+            $u = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/$escaped`?`$select=id,userPrincipalName,displayName"
+            $info = [pscustomobject]@{
+                Id          = $u.id
+                Upn         = $u.userPrincipalName
+                DisplayName = $u.displayName
+            }
+        }
+        catch {
+            Write-Verbose "Resolve-CloudPCUser: could not resolve '$IdOrUpn' ($($_.Exception.Message))"
+            $info = [pscustomobject]@{ Id = $null; Upn = $IdOrUpn; DisplayName = $null }
+        }
+
+        $script:CloudPCUserCache[$IdOrUpn] = $info
+        $info
     }
 
-    $script:CloudPCUserCache[$IdOrUpn] = $info
-    return $info
+    end { }
 }
 
 function Clear-CloudPCUserCache {
     [CmdletBinding()]
     param()
-    $script:CloudPCUserCache.Clear()
+
+    begin { }
+
+    process {
+        $script:CloudPCUserCache.Clear()
+    }
+
+    end { }
 }
