@@ -44,6 +44,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`, plus `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. Works for shared **and** dedicated. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
+| `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
@@ -73,6 +74,11 @@ Get-CloudPCByProvisioningPolicy |
 
 # Pipeline composition
 Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.csv -NoTypeInformation
+
+# Get launch URLs and Windows App launch URIs for a user's Cloud PCs
+Get-CloudPC -UserPrincipalName 'user@contoso.com' |
+    Get-CloudPCLaunchDetail -UserId 'user@contoso.com' |
+    Format-Table CloudPcName,LaunchDetailStatus,Windows365SwitchCompatible,WindowsAppLaunchUri
 
 # Reboot a single Cloud PC and confirm the action landed
 $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'

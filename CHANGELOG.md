@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCLaunchDetail` - gets Graph launch details for Cloud PCs
+  (`GET /me/cloudPCs/{id}/retrieveCloudPcLaunchDetail` or
+  `GET /users/{userId}/cloudPCs/{id}/retrieveCloudPcLaunchDetail`), emits
+  `CloudPcLaunchUrl`, Windows 365 Switch compatibility fields, and a computed
+  `WindowsAppLaunchUri` using the `ms-cloudpc:connect` protocol when a username
+  is available. Provisioning PCs that return Graph `NotFound` now emit
+  `LaunchDetailStatus = 'Unavailable'` instead of a non-terminating error.
 
 ## [0.1.6] - 2026-06-16
 ## [0.1.5] - 2026-06-16

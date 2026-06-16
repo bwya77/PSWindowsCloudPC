@@ -14,6 +14,7 @@
         'Connect-CloudPC',
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
+        'Get-CloudPCLaunchDetail',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
         'Get-CloudPCUsage',
