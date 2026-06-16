@@ -6,18 +6,53 @@ description: Common WindowsCloudPC PowerShell examples.
 
 # Examples
 
+These examples show common workflows. For full syntax and parameters, use the [command reference](./commands/).
+
+## Export a Cloud PC inventory
+
+```powershell
+Get-CloudPC |
+    Select-Object Name,Id,ProvisioningStatus,ProvisioningType,AssignedUserUpn,ProvisioningPolicyId |
+    Export-Csv .\cloudpc-inventory.csv -NoTypeInformation
+```
+
 ## Find idle Cloud PCs
 
 ```powershell
 Get-CloudPCUsage |
     Where-Object DaysSinceLastSignIn -ge 14 |
-    Sort-Object DaysSinceLastSignIn -Descending
+    Sort-Object DaysSinceLastSignIn -Descending |
+    Format-Table CloudPcName,AssignedUserUpn,UsageStatus,DaysSinceLastSignIn
+```
+
+## Show Cloud PCs by provisioning policy
+
+```powershell
+Get-CloudPCByProvisioningPolicy |
+    Sort-Object DisplayName |
+    Format-Table DisplayName,ProvisioningType,CloudPCCount,AssignedGroupCount
+```
+
+## Review launch detail for every Cloud PC
+
+```powershell
+Get-CloudPC |
+    Get-CloudPCLaunchDetail |
+    Format-Table CloudPcName,UserPrincipalName,State,LastLoginDateTime
 ```
 
 ## List restore point snapshots for a user
 
 ```powershell
 Get-CloudPCSnapshot -User 'user@contoso.com' -Verbose |
+    Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
+```
+
+## List every Cloud PC and its restore points
+
+```powershell
+Get-CloudPCSnapshot -All -Verbose |
+    Sort-Object CloudPcName,CreatedDateTime -Descending |
     Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
 ```
 
@@ -38,6 +73,14 @@ Invoke-CloudPCPolicyReprovision -ProvisioningPolicyId '<policy-id>' `
     -OsVersion windows11 -UserAccountType standardUser -Force
 ```
 
+## Review recent remote action results
+
+```powershell
+Get-CloudPCRemoteActionResult -CloudPC '<cloud-pc-id>' |
+    Sort-Object StartDateTime -Descending |
+    Format-Table ActionName,ActionState,StartDateTime,LastUpdatedDateTime
+```
+
 ## List licensing allotments
 
 ```powershell
@@ -45,3 +88,11 @@ Get-CloudPCLicensingAllotment |
     Format-Table SkuPartNumber,AllottedUnits,ConsumedUnits,AvailableUnits
 ```
 
+## Find low license capacity
+
+```powershell
+Get-CloudPCLicensingAllotment |
+    Where-Object AvailableUnits -lt 10 |
+    Sort-Object AvailableUnits |
+    Format-Table SkuPartNumber,AllottedUnits,ConsumedUnits,AvailableUnits
+```

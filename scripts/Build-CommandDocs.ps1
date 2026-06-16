@@ -11,7 +11,8 @@
 [CmdletBinding()]
 param(
     [string]$DocsPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'docs\commands'),
-    [string]$StatsPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'src\data\stats.json')
+    [string]$StatsPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'src\data\stats.json'),
+    [string]$SidebarPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'src\data\commandSidebar.json')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -189,6 +190,7 @@ function ConvertTo-MdxText {
 
 New-Directory -Path $DocsPath
 New-Directory -Path (Split-Path $StatsPath -Parent)
+New-Directory -Path (Split-Path $SidebarPath -Parent)
 Get-ChildItem -Path $DocsPath -Filter '*.md' -File -ErrorAction SilentlyContinue | Remove-Item -Force
 
 Get-Module WindowsCloudPC | Remove-Module -Force -ErrorAction SilentlyContinue
@@ -212,6 +214,9 @@ $stats = [ordered]@{
     statsSource = $gallery.source
 }
 $stats | ConvertTo-Json -Depth 6 | Set-Content -Path $StatsPath -Encoding utf8NoBOM
+
+$commandSidebar = @($commands | ForEach-Object { 'commands/' + (ConvertTo-Slug $_.Name) })
+$commandSidebar | ConvertTo-Json | Set-Content -Path $SidebarPath -Encoding utf8NoBOM
 
 $indexRows = foreach ($command in $commands) {
     $sourceFile = Join-Path $PublicPath ($command.Name + '.ps1')
@@ -336,3 +341,4 @@ $($exampleSections -join "`n")
 
 Write-Host "Generated $($commands.Count) Docusaurus command pages in $DocsPath" -ForegroundColor Green
 Write-Host "Wrote documentation stats to $StatsPath" -ForegroundColor Green
+Write-Host "Wrote command sidebar to $SidebarPath" -ForegroundColor Green

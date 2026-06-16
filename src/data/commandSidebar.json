@@ -1,0 +1,18 @@
+[
+  "commands/connect-cloudpc",
+  "commands/get-cloudpc",
+  "commands/get-cloudpcbyprovisioningpolicy",
+  "commands/get-cloudpclaunchdetail",
+  "commands/get-cloudpclicensingallotment",
+  "commands/get-cloudpcprovisioningpolicy",
+  "commands/get-cloudpcremoteactionresult",
+  "commands/get-cloudpcsettingprofile",
+  "commands/get-cloudpcsnapshot",
+  "commands/get-cloudpcsupportedregion",
+  "commands/get-cloudpcusage",
+  "commands/get-cloudpcusersetting",
+  "commands/invoke-cloudpcpolicyreprovision",
+  "commands/invoke-cloudpcreprovision",
+  "commands/new-cloudpcsnapshot",
+  "commands/restart-cloudpc"
+]

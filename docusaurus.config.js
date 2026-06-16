@@ -63,6 +63,7 @@ const config = {
             label: 'Docs',
           },
           { to: '/docs/commands/', label: 'Commands', position: 'left' },
+          { to: '/docs/examples', label: 'Examples', position: 'left' },
           {
             href: 'https://www.powershellgallery.com/packages/WindowsCloudPC',
             label: 'PowerShell Gallery',
