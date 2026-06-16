@@ -45,6 +45,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
+| `Get-CloudPCLicensingAllotment` | List Microsoft Graph cloud licensing allotments from Graph beta. Supports single allotment lookup plus `$select`, `$expand`, `$filter`, `$top`, and `$apply` query shaping. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
 | `Get-CloudPCSettingProfile` | List Windows 365 setting profiles from Graph beta. Use `-Id` for a single profile and `-IncludeDetails` to expand assignments and settings, including object and list setting children. |
 | `Get-CloudPCSnapshot` | List Cloud PC restore point snapshots from Graph beta. Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`, with friendly Cloud PC names and verbose progress output. |
@@ -84,6 +85,19 @@ Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.cs
 Get-CloudPC -UserPrincipalName 'user@contoso.com' |
     Get-CloudPCLaunchDetail -UserId 'user@contoso.com' |
     Format-Table CloudPcName,LaunchDetailStatus,Windows365SwitchCompatible,WindowsAppLaunchUri
+
+# List cloud licensing allotments
+Get-CloudPCLicensingAllotment |
+    Format-Table SkuPartNumber,AllottedUnits,ConsumedUnits,AvailableUnits,AssignableTo
+
+# Get one cloud licensing allotment by ID
+Get-CloudPCLicensingAllotment -Id '<allotment-id>' |
+    Select-Object SkuPartNumber,AllottedUnits,ConsumedUnits,Services,Subscriptions
+
+# Shape the beta allotments query with OData options
+Get-CloudPCLicensingAllotment `
+    -Select id,skuPartNumber,allottedUnits,consumedUnits `
+    -Expand 'waitingMembers($select=id,waitingSinceDateTime)'
 
 # List supported Windows 365 Cloud PC regions
 Get-CloudPCSupportedRegion |

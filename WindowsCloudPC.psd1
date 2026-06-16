@@ -15,6 +15,7 @@
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCLaunchDetail',
+        'Get-CloudPCLicensingAllotment',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
         'Get-CloudPCSettingProfile',
