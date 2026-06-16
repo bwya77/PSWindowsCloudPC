@@ -217,6 +217,7 @@ function New-CloudPCProvisioningPolicy {
                 $assignStatus = 'Skipped'
             }
             else {
+                $hasAllotmentLicensesCountOverride = $PSBoundParameters.ContainsKey('AllotmentLicensesCount')
                 $buildAssignments = {
                     param(
                         [bool]$IncludeAssignmentId
@@ -237,7 +238,7 @@ function New-CloudPCProvisioningPolicy {
                         if ($assignment.PSObject.Properties['ServicePlanId'] -and $assignment.ServicePlanId) {
                             $assignmentBody.target['servicePlanId'] = $assignment.ServicePlanId
                         }
-                        $effectiveAllotmentLicensesCount = if ($PSBoundParameters.ContainsKey('AllotmentLicensesCount')) {
+                        $effectiveAllotmentLicensesCount = if ($hasAllotmentLicensesCountOverride) {
                             $AllotmentLicensesCount
                         }
                         elseif ($assignment.PSObject.Properties['AllotmentLicensesCount'] -and $null -ne $assignment.AllotmentLicensesCount) {
