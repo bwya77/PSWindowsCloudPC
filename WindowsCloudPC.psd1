@@ -15,7 +15,9 @@
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCProvisioningPolicy',
-        'Get-CloudPCUsage'
+        'Get-CloudPCRemoteActionResult',
+        'Get-CloudPCUsage',
+        'Restart-CloudPC'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()

@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Restart-CloudPC` — reboot one or more Cloud PCs via Graph
+  (`POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/reboot`). Pipeline-
+  friendly from `Get-CloudPC`, `SupportsShouldProcess` with
+  `ConfirmImpact='High'` (use `-Force` or `-Confirm:$false` to bypass),
+  `-PassThru` emits a `WindowsCloudPC.RestartResult`. Auto-adds the
+  `CloudPC.ReadWrite.All` scope.
+- `Get-CloudPCRemoteActionResult` — recent remote-action history
+  (`GET /deviceManagement/virtualEndpoint/cloudPCs/{id}/retrieveCloudPCRemoteActionResults`)
+  with `ActionName`, `ActionState`, timestamps, `ManagedDeviceId`, status
+  detail, and `HasDownTime`. Sorted most-recent-first. Use immediately after
+  `Restart-CloudPC` to confirm the action landed and watch state transition
+  from `pending` to `done`.
 
 ## [0.1.4] - 2026-06-15
 ### Changed

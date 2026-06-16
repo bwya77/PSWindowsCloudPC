@@ -9,7 +9,7 @@ PowerShell module for managing and querying Windows 365 Cloud PCs via Microsoft 
 
 ## Status
 
-Early — read-only functions only.
+Early — read-only queries plus a small set of write actions (reboot).
 
 ## Requirements
 
@@ -20,6 +20,7 @@ Early — read-only functions only.
   - `DeviceManagementManagedDevices.Read.All`
   - `User.Read.All`
   - `Group.Read.All`
+  - `CloudPC.ReadWrite.All` (added on-demand by `Restart-CloudPC`)
 
 ## Install
 
@@ -43,6 +44,8 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`, plus `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. Works for shared **and** dedicated. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
+| `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
+| `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 
 ## Quick start
 
@@ -68,6 +71,15 @@ Get-CloudPCByProvisioningPolicy |
 
 # Pipeline composition
 Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.csv -NoTypeInformation
+
+# Reboot a single Cloud PC and confirm the action landed
+$pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'
+$pc | Restart-CloudPC -Force
+$pc | Get-CloudPCRemoteActionResult | Where-Object ActionName -eq 'Restart'
+
+# Tenant-wide most-recent-action snapshot
+Get-CloudPC | Get-CloudPCRemoteActionResult |
+    Format-Table CloudPcName,ActionName,ActionState,StartDateTime,HasDownTime
 ```
 
 ## How `UsageStatus` is determined
@@ -96,7 +108,7 @@ Force a `minor` or `major` bump from the **Actions → Release → Run workflow*
 ## Roadmap
 
 - `Get-CloudPCConnection` (connectivity health history)
-- `Restart-CloudPC`, `Restore-CloudPC`, `Resize-CloudPC`, `Reprovision-CloudPC`
+- `Restore-CloudPC`, `Resize-CloudPC`, `Reprovision-CloudPC`
 - `Get-CloudPCAuditEvent`
 - Format file (`.format.ps1xml`) for default table views
 - Authenticode signing via Azure Trusted Signing
