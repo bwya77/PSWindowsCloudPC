@@ -52,6 +52,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCUserSetting` | List Windows 365 Cloud PC user settings from Graph beta, including reset, restore point, local admin, cross-region disaster recovery, notification, and assignment details. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
+| `New-CloudPCSnapshot` | Create Cloud PC restore point snapshots via Graph beta. Supports one Cloud PC by ID, object, or friendly name, plus `-All`, `-User`, and `-ProvisioningPolicyId` batch modes. Emits one result row per target. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 
 ## Quick start
@@ -119,6 +120,20 @@ Get-CloudPCSnapshot -User 'user@contoso.com' -Verbose |
 # List restore point snapshots for one Cloud PC by friendly name
 Get-CloudPCSnapshot -CloudPC 'CFD-Vance-XS4KT' |
     Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
+
+# Create a restore point snapshot for one Cloud PC by friendly name
+New-CloudPCSnapshot -CloudPC 'CFD-Vance-XS4KT' -Force |
+    Format-Table CloudPcName,Status,RequestedAt,ErrorMessage
+
+# Create restore point snapshots for all Cloud PCs assigned to a user
+New-CloudPCSnapshot -User 'user@contoso.com' -Force |
+    Format-Table CloudPcName,AssignedUserUpn,Status,RequestedAt,ErrorMessage
+
+# Create restore point snapshots for every Cloud PC in a provisioning policy except selected targets
+New-CloudPCSnapshot -ProvisioningPolicyId '<policy-id>' `
+    -ExcludeCloudPC 'CPC-KEEP-01','CPC-KEEP-02','cpc-id-3','user4@contoso.com' `
+    -Force |
+    Format-Table CloudPcName,AssignedUserUpn,ProvisioningPolicyName,Status,Excluded,ErrorMessage
 
 # Reboot a single Cloud PC and confirm the action landed
 $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'

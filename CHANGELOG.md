@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Snapshot output includes friendly Cloud PC names, timestamps, status, type,
   health check status, and raw Graph data. `-Verbose` reports Cloud PC
   enumeration and per-PC snapshot counts.
+- `New-CloudPCSnapshot` - creates Cloud PC restore point snapshots from Graph beta
+  (`POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/createSnapshot`).
+  Supports one Cloud PC by ID, object, or friendly name, plus `-All`, `-User`,
+  and `-ProvisioningPolicyId` batch modes. Optional `-StorageAccountId`,
+  `-AccessTier`, `-ExcludeCloudPC`, `-Force`, and `-WhatIf` parameters support
+  scoped, auditable snapshot runs.
 
 ## [0.1.8] - 2026-06-16
 ## [0.1.7] - 2026-06-16

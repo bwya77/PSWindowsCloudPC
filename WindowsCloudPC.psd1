@@ -24,6 +24,7 @@
         'Get-CloudPCUserSetting',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
+        'New-CloudPCSnapshot',
         'Restart-CloudPC'
     )
     CmdletsToExport      = @()
