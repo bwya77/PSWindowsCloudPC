@@ -1,12 +1,12 @@
 {
   "moduleVersion": "0.1.11",
   "galleryVersion": "0.1.11",
-  "downloadCount": 45,
+  "downloadCount": 46,
   "publishedDate": "2026-06-16T08:52:54.0000000Z",
   "commandCount": 16,
   "testSpecCount": 146,
   "repositoryUrl": "https://github.com/bwya77/PSWindowsCloudPC",
   "galleryUrl": "https://www.powershellgallery.com/packages/WindowsCloudPC",
-  "generatedAt": "2026-06-16T04:36:35.2652208Z",
+  "generatedAt": "2026-06-16T04:40:23.2813208Z",
   "statsSource": "PowerShellGallery"
 }
