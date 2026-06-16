@@ -17,8 +17,11 @@
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
+        'Get-CloudPCSettingProfile',
+        'Get-CloudPCSnapshot',
         'Get-CloudPCSupportedRegion',
         'Get-CloudPCUsage',
+        'Get-CloudPCUserSetting',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
         'Restart-CloudPC'

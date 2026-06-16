@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCUserSetting` - lists Windows 365 Cloud PC user settings from
+  Graph beta (`GET /deviceManagement/virtualEndpoint/userSettings`), including
+  reset, restore point, local admin, cross-region disaster recovery, notification,
+  assignment, timestamp, and raw nested setting details.
+- `Get-CloudPCSettingProfile` - lists Windows 365 setting profiles from Graph
+  beta (`GET /deviceManagement/virtualEndpoint/settingProfiles`). Supports
+  single-profile lookup and `-IncludeDetails` to expand assignments and settings,
+  including object and list setting children.
+- `Get-CloudPCSnapshot` - lists Cloud PC restore point snapshots from Graph beta
+  (`GET /deviceManagement/virtualEndpoint/cloudPCs/{id}/retrieveSnapshots`).
+  Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`.
+  Snapshot output includes friendly Cloud PC names, timestamps, status, type,
+  health check status, and raw Graph data. `-Verbose` reports Cloud PC
+  enumeration and per-PC snapshot counts.
 
 ## [0.1.8] - 2026-06-16
 ## [0.1.7] - 2026-06-16

@@ -46,7 +46,10 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
+| `Get-CloudPCSettingProfile` | List Windows 365 setting profiles from Graph beta. Use `-Id` for a single profile and `-IncludeDetails` to expand assignments and settings, including object and list setting children. |
+| `Get-CloudPCSnapshot` | List Cloud PC restore point snapshots from Graph beta. Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`, with friendly Cloud PC names and verbose progress output. |
 | `Get-CloudPCSupportedRegion` | List Windows 365 supported Cloud PC regions from Graph beta, including region status, supported solution, region group, and geographic location type. Supports client-side filters for status, solution, region group, and geography. |
+| `Get-CloudPCUserSetting` | List Windows 365 Cloud PC user settings from Graph beta, including reset, restore point, local admin, cross-region disaster recovery, notification, and assignment details. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
@@ -88,6 +91,34 @@ Get-CloudPCSupportedRegion |
 
 # Find available regions in a specific region group
 Get-CloudPCSupportedRegion -RegionStatus available -RegionGroup usEast
+
+# List Cloud PC user settings
+Get-CloudPCUserSetting |
+    Format-Table DisplayName,ResetEnabled,UserRestoreEnabled,LocalAdminEnabled
+
+# Get one user setting with assignments
+Get-CloudPCUserSetting -Id '<user-setting-id>' -IncludeAssignments |
+    Select-Object DisplayName,Assignments
+
+# List Windows 365 setting profiles
+Get-CloudPCSettingProfile |
+    Format-Table DisplayName,ProfileType,TemplateId,IsAssigned,Priority
+
+# Get one setting profile with assignments and expanded settings
+Get-CloudPCSettingProfile -Id '<setting-profile-id>' -IncludeDetails |
+    Select-Object DisplayName,Assignments,Settings
+
+# List restore point snapshots for all Cloud PCs
+Get-CloudPCSnapshot -All -Verbose |
+    Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
+
+# List restore point snapshots for all Cloud PCs assigned to a user
+Get-CloudPCSnapshot -User 'user@contoso.com' -Verbose |
+    Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
+
+# List restore point snapshots for one Cloud PC by friendly name
+Get-CloudPCSnapshot -CloudPC 'CFD-Vance-XS4KT' |
+    Format-Table CloudPcName,Status,SnapshotType,CreatedDateTime
 
 # Reboot a single Cloud PC and confirm the action landed
 $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'
