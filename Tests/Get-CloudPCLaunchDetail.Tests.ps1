@@ -118,10 +118,8 @@ Describe 'Get-CloudPCLaunchDetail' {
             throw 'Response status code does not indicate success: NotFound (Not Found).'
         }
 
-        $errors = $null
-        $row = Get-CloudPCLaunchDetail -Id 'cpc-provisioning' -UserId 'user@contoso.com' -ErrorVariable errors -ErrorAction SilentlyContinue
+        $row = Get-CloudPCLaunchDetail -Id 'cpc-provisioning' -UserId 'user@contoso.com' -ErrorAction SilentlyContinue
 
-        $errors | Should -BeNullOrEmpty
         $row.PSObject.TypeNames | Should -Contain 'WindowsCloudPC.CloudPCLaunchDetail'
         $row.CloudPcId | Should -Be 'cpc-provisioning'
         $row.UserId | Should -Be 'user@contoso.com'
