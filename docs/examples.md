@@ -33,6 +33,24 @@ Get-CloudPCByProvisioningPolicy |
     Format-Table DisplayName,ProvisioningType,CloudPCCount,AssignedGroupCount
 ```
 
+## Export and copy a provisioning policy
+
+```powershell
+Export-CloudPCProvisioningPolicy -Id '<policy-id>' -Path .\policy-export.json
+
+New-CloudPCProvisioningPolicy -Path .\policy-export.json `
+    -DisplayName 'Copied Policy' `
+    -Assign `
+    -Force
+```
+
+## Delete a copied provisioning policy
+
+```powershell
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -WhatIf
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -Force -PassThru
+```
+
 ## Review launch detail for every Cloud PC
 
 ```powershell

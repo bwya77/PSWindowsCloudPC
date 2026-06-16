@@ -39,6 +39,61 @@ Get-CloudPCProvisioningPolicy |
     Select-Object DisplayName,Id,ProvisioningType,ImageDisplayName,ManagedBy
 ```
 
+## Export and recreate provisioning policies
+
+Export a provisioning policy to JSON when you want to back it up, review the create body, or create a copy.
+
+```powershell
+Export-CloudPCProvisioningPolicy -Id '<policy-id>' -Path .\policy-export.json
+```
+
+The export separates the create-safe policy body from assignment targets. Create can be previewed first:
+
+```powershell
+New-CloudPCProvisioningPolicy -Path .\policy-export.json `
+    -DisplayName 'Copied Policy' `
+    -WhatIf
+```
+
+Create the policy and recreate exported assignment targets:
+
+```powershell
+New-CloudPCProvisioningPolicy -Path .\policy-export.json `
+    -DisplayName 'Copied Policy' `
+    -Assign `
+    -Force
+```
+
+For Flex Shared policies, the assignment reserves an allotment count. If the source policy reserves more Cloud PCs than the tenant has remaining, lower the assignment count while importing:
+
+```powershell
+New-CloudPCProvisioningPolicy -Path .\policy-export.json `
+    -DisplayName 'Copied Flex Shared Policy' `
+    -RegionName eastus2 `
+    -AllotmentLicensesCount 1 `
+    -Assign `
+    -Force
+```
+
+Assignments are applied after the new policy is created because Microsoft Graph uses a separate `/assign` action.
+
+## Delete provisioning policies
+
+Delete copied or unused provisioning policies by ID or from the pipeline. Microsoft Graph cannot delete a policy that is still in use.
+
+```powershell
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -WhatIf
+
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -Force -PassThru
+```
+
+Pipeline usage:
+
+```powershell
+Get-CloudPCProvisioningPolicy -Id '<policy-id>' |
+    Remove-CloudPCProvisioningPolicy -Force -PassThru
+```
+
 ## Usage reporting
 
 `Get-CloudPCUsage` combines Cloud PC inventory with managed device state so you can see active and idle Cloud PCs.
@@ -88,4 +143,3 @@ Get-CloudPCUsage |
     Select-Object CloudPcName,AssignedUserUpn,UsageStatus,DaysSinceLastSignIn,LastSignInDateTime |
     Export-Csv .\cloudpc-usage.csv -NoTypeInformation
 ```
-

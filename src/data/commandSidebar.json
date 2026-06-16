@@ -1,5 +1,6 @@
 [
   "commands/connect-cloudpc",
+  "commands/export-cloudpcprovisioningpolicy",
   "commands/get-cloudpc",
   "commands/get-cloudpcbyprovisioningpolicy",
   "commands/get-cloudpclaunchdetail",
@@ -13,6 +14,8 @@
   "commands/get-cloudpcusersetting",
   "commands/invoke-cloudpcpolicyreprovision",
   "commands/invoke-cloudpcreprovision",
+  "commands/new-cloudpcprovisioningpolicy",
   "commands/new-cloudpcsnapshot",
+  "commands/remove-cloudpcprovisioningpolicy",
   "commands/restart-cloudpc"
 ]

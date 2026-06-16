@@ -12,6 +12,7 @@
     )
     FunctionsToExport    = @(
         'Connect-CloudPC',
+        'Export-CloudPCProvisioningPolicy',
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCLaunchDetail',
@@ -25,7 +26,9 @@
         'Get-CloudPCUserSetting',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
+        'New-CloudPCProvisioningPolicy',
         'New-CloudPCSnapshot',
+        'Remove-CloudPCProvisioningPolicy',
         'Restart-CloudPC'
     )
     CmdletsToExport      = @()

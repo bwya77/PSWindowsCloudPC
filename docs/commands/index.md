@@ -12,6 +12,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | Command | Summary | Type |
 | --- | --- | --- |
 | [Connect-CloudPC](/docs/commands/connect-cloudpc) | Connects to Microsoft Graph with the scopes required by WindowsCloudPC. | Read |
+| [Export-CloudPCProvisioningPolicy](/docs/commands/export-cloudpcprovisioningpolicy) | Exports a Windows 365 Cloud PC provisioning policy as reusable JSON. | Read |
 | [Get-CloudPC](/docs/commands/get-cloudpc) | Returns Windows 365 Cloud PCs in the tenant. | Read |
 | [Get-CloudPCByProvisioningPolicy](/docs/commands/get-cloudpcbyprovisioningpolicy) | Groups Cloud PCs under their provisioning policies and returns one row per policy. | Read |
 | [Get-CloudPCLaunchDetail](/docs/commands/get-cloudpclaunchdetail) | Gets launch details for one or more Windows 365 Cloud PCs. | Read |
@@ -25,5 +26,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCUserSetting](/docs/commands/get-cloudpcusersetting) | Returns Windows 365 Cloud PC user settings. | Read |
 | [Invoke-CloudPCPolicyReprovision](/docs/commands/invoke-cloudpcpolicyreprovision) | Reprovisions Cloud PCs assigned to a provisioning policy. | Action |
 | [Invoke-CloudPCReprovision](/docs/commands/invoke-cloudpcreprovision) | Reprovisions one or more Windows 365 Cloud PCs. | Action |
+| [New-CloudPCProvisioningPolicy](/docs/commands/new-cloudpcprovisioningpolicy) | Creates a Windows 365 Cloud PC provisioning policy from an export. | Action |
 | [New-CloudPCSnapshot](/docs/commands/new-cloudpcsnapshot) | Creates restore point snapshots for one or more Windows 365 Cloud PCs. | Action |
+| [Remove-CloudPCProvisioningPolicy](/docs/commands/remove-cloudpcprovisioningpolicy) | Deletes a Windows 365 Cloud PC provisioning policy. | Action |
 | [Restart-CloudPC](/docs/commands/restart-cloudpc) | Reboots one or more Windows 365 Cloud PCs. | Action |

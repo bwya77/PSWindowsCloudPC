@@ -43,6 +43,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | Function | Purpose |
 | --- | --- |
 | `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. |
+| `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
 | `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`, plus `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. Works for shared **and** dedicated. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
@@ -56,7 +57,9 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCUserSetting` | List Windows 365 Cloud PC user settings from Graph beta, including reset, restore point, local admin, cross-region disaster recovery, notification, and assignment details. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
+| `New-CloudPCProvisioningPolicy` | Create a provisioning policy from an export. Supports `-WhatIf`, display name and description overrides, and optional assignment recreation with `-Assign`. |
 | `New-CloudPCSnapshot` | Create Cloud PC restore point snapshots via Graph beta. Supports one Cloud PC by ID, object, or friendly name, plus `-All`, `-User`, and `-ProvisioningPolicyId` batch modes. Emits one result row per target. |
+| `Remove-CloudPCProvisioningPolicy` | Delete a provisioning policy by ID or pipeline object. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. Graph cannot delete policies that are still in use. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 
 ## Quick start
@@ -75,6 +78,22 @@ Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14 | Sort-Object DaysSin
 
 # Per-policy breakdown
 Get-CloudPCByProvisioningPolicy | Format-Table DisplayName,ProvisioningType,CloudPCCount
+
+# Export a provisioning policy to reusable JSON
+Export-CloudPCProvisioningPolicy -Id '<policy-id>' -Path .\policy-export.json
+
+# Preview creating a copy from the export
+New-CloudPCProvisioningPolicy -Path .\policy-export.json -DisplayName 'Copied Policy' -WhatIf
+
+# Create the copy and recreate exported assignment targets
+New-CloudPCProvisioningPolicy -Path .\policy-export.json -DisplayName 'Copied Policy' -Assign -Force
+
+# Copy a Flex Shared policy with a lower reserved Cloud PC allotment
+New-CloudPCProvisioningPolicy -Path .\policy-export.json -DisplayName 'Copied Flex Shared Policy' -RegionName eastus2 -AllotmentLicensesCount 1 -Assign -Force
+
+# Delete a copied provisioning policy
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -WhatIf
+Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -Force -PassThru
 
 # Drill into a single policy's Cloud PCs
 Get-CloudPCByProvisioningPolicy |

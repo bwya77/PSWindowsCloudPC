@@ -1,6 +1,7 @@
 BeforeDiscovery {
     $script:PublicFunctions = @(
         'Connect-CloudPC',
+        'Export-CloudPCProvisioningPolicy',
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCLaunchDetail',
@@ -14,7 +15,9 @@ BeforeDiscovery {
         'Get-CloudPCUserSetting',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
+        'New-CloudPCProvisioningPolicy',
         'New-CloudPCSnapshot',
+        'Remove-CloudPCProvisioningPolicy',
         'Restart-CloudPC'
     )
 }
