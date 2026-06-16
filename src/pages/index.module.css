@@ -2,9 +2,9 @@
   padding: 5rem 0;
   color: var(--ifm-font-color-base);
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 30rem),
+    radial-gradient(circle at top left, rgba(var(--wcp-hero-glow-rgb), 0.18), transparent 30rem),
     linear-gradient(180deg, var(--ifm-background-color) 0%, var(--ifm-background-surface-color) 100%);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  border-bottom: 1px solid var(--wcp-border-color);
 }
 
 .heroGrid {
@@ -45,7 +45,7 @@
 
 .quickStart {
   overflow: hidden;
-  border: 1px solid var(--ifm-color-emphasis-200);
+  border: 1px solid var(--wcp-border-color);
   border-radius: 1rem;
   background: var(--ifm-code-background);
   box-shadow: var(--ifm-global-shadow-md);
@@ -55,7 +55,7 @@
   display: flex;
   gap: 0.4rem;
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  border-bottom: 1px solid var(--wcp-border-color);
   background: var(--ifm-background-surface-color);
 }
 
@@ -78,7 +78,7 @@
 .stats {
   padding: 1.5rem 0;
   background: var(--ifm-background-surface-color);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  border-bottom: 1px solid var(--wcp-border-color);
 }
 
 .statsGrid {
@@ -91,7 +91,7 @@
 .featureCard {
   height: 100%;
   padding: 1.35rem;
-  border: 1px solid var(--ifm-color-emphasis-200);
+  border: 1px solid var(--wcp-border-color);
   border-radius: 0.9rem;
   background: var(--ifm-card-background-color);
 }

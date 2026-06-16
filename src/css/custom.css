@@ -1,31 +1,56 @@
 :root {
-  --ifm-color-primary: #2563eb;
-  --ifm-color-primary-dark: #1d4ed8;
-  --ifm-color-primary-darker: #1e40af;
-  --ifm-color-primary-darkest: #172554;
-  --ifm-color-primary-light: #3b82f6;
-  --ifm-color-primary-lighter: #60a5fa;
-  --ifm-color-primary-lightest: #dbeafe;
+  --ifm-color-primary: #2082b7;
+  --ifm-color-primary-dark: #1d75a5;
+  --ifm-color-primary-darker: #1b6e9b;
+  --ifm-color-primary-darkest: #165b80;
+  --ifm-color-primary-light: #2d8ec7;
+  --ifm-color-primary-lighter: #43b7d6;
+  --ifm-color-primary-lightest: #d9f4fb;
+  --ifm-link-color: #2082b7;
+  --ifm-link-hover-color: #2d8ec7;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-heading-font-weight: 750;
   --ifm-navbar-shadow: none;
   --ifm-global-radius: 0.6rem;
+  --ifm-background-color: #f8fafc;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-card-background-color: #ffffff;
+  --ifm-font-color-base: #172033;
+  --wcp-border-color: #d8e2ec;
+  --wcp-hero-glow-rgb: 45, 142, 199;
 }
 
-[data-theme='dark'] {
-  --ifm-color-primary: #60a5fa;
-  --ifm-color-primary-dark: #3b82f6;
-  --ifm-color-primary-darker: #2563eb;
-  --ifm-color-primary-darkest: #1d4ed8;
-  --ifm-color-primary-light: #93c5fd;
-  --ifm-color-primary-lighter: #bfdbfe;
-  --ifm-color-primary-lightest: #dbeafe;
+:root[data-theme='dark'] {
+  --ifm-color-primary: #43b7d6;
+  --ifm-color-primary-dark: #2db7d6;
+  --ifm-color-primary-darker: #2d8ec7;
+  --ifm-color-primary-darkest: #4b6f9a;
+  --ifm-color-primary-light: #59a2c5;
+  --ifm-color-primary-lighter: #8cc7dc;
+  --ifm-color-primary-lightest: #ccecf5;
+  --ifm-background-color: #1e1e1e;
+  --ifm-background-surface-color: #262626;
+  --ifm-card-background-color: #2b2e2f;
+  --ifm-font-color-base: #dadada;
+  --ifm-font-color-secondary: #bababa;
+  --ifm-heading-color: #e6f7fb;
+  --ifm-link-color: #43b7d6;
+  --ifm-link-hover-color: #2d8ec7;
+  --ifm-menu-color-background-active: rgba(67, 183, 214, 0.12);
+  --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.07);
+  --ifm-code-background: #111111;
+  --ifm-pre-background: #111111;
+  --ifm-table-border-color: #3f3f3f;
   --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+  --wcp-border-color: #3f3f3f;
+  --wcp-hero-glow-rgb: 45, 183, 214;
 }
 
 .navbar {
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  border-bottom: 1px solid var(--wcp-border-color);
+  background: color-mix(in srgb, var(--ifm-background-surface-color) 94%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .table-of-contents__link {
@@ -33,7 +58,7 @@
 }
 
 code {
-  border: 1px solid var(--ifm-color-emphasis-200);
+  border: 1px solid var(--wcp-border-color);
 }
 
 .theme-doc-markdown {
