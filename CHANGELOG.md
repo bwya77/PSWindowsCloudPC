@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   detail, and `HasDownTime`. Sorted most-recent-first. Use immediately after
   `Restart-CloudPC` to confirm the action landed and watch state transition
   from `pending` to `done`.
+- `Invoke-CloudPCReprovision` — reprovision one or more Cloud PCs via Graph
+  (`POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/reprovision`).
+  Pipeline-friendly from `Get-CloudPC`, `SupportsShouldProcess` with
+  `ConfirmImpact='High'`, optional `-OsVersion` / `-UserAccountType`, `-Force`,
+  and `-PassThru`. Auto-adds the `CloudPC.ReadWrite.All` scope.
+- `Invoke-CloudPCPolicyReprovision` — resolves all Cloud PCs assigned to a
+  provisioning policy, supports exclusions by name, ID, managed device ID, Azure
+  AD device ID, or assigned user UPN, invokes reprovision for included PCs, and
+  emits a result row for every included/excluded target.
 
 ## [0.1.4] - 2026-06-15
 ### Changed

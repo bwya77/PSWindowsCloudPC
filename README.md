@@ -9,7 +9,7 @@ PowerShell module for managing and querying Windows 365 Cloud PCs via Microsoft 
 
 ## Status
 
-Early — read-only queries plus a small set of write actions (reboot).
+Early — read-only queries plus a small set of write actions (reboot and reprovision).
 
 ## Requirements
 
@@ -20,7 +20,7 @@ Early — read-only queries plus a small set of write actions (reboot).
   - `DeviceManagementManagedDevices.Read.All`
   - `User.Read.All`
   - `Group.Read.All`
-  - `CloudPC.ReadWrite.All` (added on-demand by `Restart-CloudPC`)
+  - `CloudPC.ReadWrite.All` (added on-demand by reboot/reprovision cmdlets)
 
 ## Install
 
@@ -45,6 +45,8 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
+| `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
+| `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 
 ## Quick start
@@ -77,6 +79,16 @@ $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'
 $pc | Restart-CloudPC -Force
 $pc | Get-CloudPCRemoteActionResult | Where-Object ActionName -eq 'Restart'
 
+# Reprovision a single Cloud PC and confirm the action landed
+$pc | Invoke-CloudPCReprovision -OsVersion windows11 -UserAccountType standardUser -Force
+$pc | Get-CloudPCRemoteActionResult | Where-Object ActionName -eq 'Reprovision'
+
+# Reprovision every Cloud PC in a policy except a small exclusion list
+Invoke-CloudPCPolicyReprovision -ProvisioningPolicyId '<policy-id>' `
+    -ExcludeCloudPC 'CPC-KEEP-01','CPC-KEEP-02','cpc-id-3','user4@contoso.com' `
+    -OsVersion windows11 -UserAccountType standardUser -Force |
+    Format-Table CloudPcName,AssignedUserUpn,Status,Excluded,ErrorMessage
+
 # Tenant-wide most-recent-action snapshot
 Get-CloudPC | Get-CloudPCRemoteActionResult |
     Format-Table CloudPcName,ActionName,ActionState,StartDateTime,HasDownTime
@@ -108,7 +120,7 @@ Force a `minor` or `major` bump from the **Actions → Release → Run workflow*
 ## Roadmap
 
 - `Get-CloudPCConnection` (connectivity health history)
-- `Restore-CloudPC`, `Resize-CloudPC`, `Reprovision-CloudPC`
+- `Restore-CloudPC`, `Resize-CloudPC`
 - `Get-CloudPCAuditEvent`
 - Format file (`.format.ps1xml`) for default table views
 - Authenticode signing via Azure Trusted Signing

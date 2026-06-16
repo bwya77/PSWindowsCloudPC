@@ -6,6 +6,8 @@ BeforeDiscovery {
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
         'Get-CloudPCUsage',
+        'Invoke-CloudPCPolicyReprovision',
+        'Invoke-CloudPCReprovision',
         'Restart-CloudPC'
     )
 }
