@@ -12,7 +12,7 @@ Detailed Docusaurus documentation is published to GitHub Pages: <https://bwya77.
 
 ## Status
 
-Early - read-only queries plus write actions for reboot, reprovision, snapshots, provisioning policies, and maintenance windows.
+Early - read-only queries plus write actions for power-on, reboot, sync, local admin password rotation, reprovision, snapshots, provisioning policies, and maintenance windows.
 
 ## Requirements
 
@@ -23,7 +23,8 @@ Early - read-only queries plus write actions for reboot, reprovision, snapshots,
   - `DeviceManagementManagedDevices.Read.All`
   - `User.Read.All`
   - `Group.Read.All`
-  - `CloudPC.ReadWrite.All` (added on-demand by reboot/reprovision cmdlets)
+  - `CloudPC.ReadWrite.All` (added on-demand by power-on/reboot/reprovision cmdlets)
+  - `DeviceManagementManagedDevices.PrivilegedOperations.All` (added on-demand by `Sync-CloudPC` and `Reset-CloudPCLocalAdminPassword`)
 
 ## Install
 
@@ -63,7 +64,10 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `New-CloudPCSnapshot` | Create Cloud PC restore point snapshots via Graph beta. Supports one Cloud PC by ID, object, or friendly name, plus `-All`, `-User`, and `-ProvisioningPolicyId` batch modes. Emits one result row per target. |
 | `Remove-CloudPCMaintenanceWindow` | Delete a Cloud PC maintenance window by ID, exact display name, or pipeline object. Clears assignments before delete to avoid Graph 409 conflicts. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. |
 | `Remove-CloudPCProvisioningPolicy` | Delete a provisioning policy by ID or pipeline object. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. Graph cannot delete policies that are still in use. |
+| `Reset-CloudPCLocalAdminPassword` | Rotate the local admin password for one or more Cloud PCs through the Intune managed device action. Accepts Cloud PC objects, exact names, Cloud PC IDs, or managed device IDs. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
+| `Start-CloudPC` | Power on one or more Cloud PCs via Graph beta. Accepts Cloud PC objects, exact names, or IDs. Pipeline-friendly, supports `-WhatIf`, `-Force`, and `-PassThru`. |
+| `Sync-CloudPC` | Sync one or more Cloud PCs through the Intune managed device `syncDevice` action. Accepts Cloud PC objects, exact names, Cloud PC IDs, or managed device IDs. |
 
 ## Quick start
 
@@ -194,6 +198,18 @@ New-CloudPCSnapshot -ProvisioningPolicyId '<policy-id>' `
 $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'
 $pc | Restart-CloudPC -Force
 $pc | Get-CloudPCRemoteActionResult | Where-Object ActionName -eq 'Restart'
+
+# Power on a Cloud PC by exact name or ID
+Start-CloudPC -CloudPC 'CPC-brad-U2O0S' -Force -PassThru
+Start-CloudPC -Id '<cloud-pc-id>' -Force -PassThru
+
+# Sync a Cloud PC through the Intune managed device action
+Sync-CloudPC -CloudPC 'CPC-brad-U2O0S' -Force -PassThru
+Sync-CloudPC -ManagedDeviceId '<managed-device-id>' -Force -PassThru
+
+# Rotate a Cloud PC local admin password through the Intune managed device action
+Reset-CloudPCLocalAdminPassword -CloudPC 'CPC-brad-U2O0S' -Force -PassThru
+Reset-CloudPCLocalAdminPassword -ManagedDeviceId '<managed-device-id>' -Force -PassThru
 
 # Reprovision a single Cloud PC and confirm the action landed
 $pc | Invoke-CloudPCReprovision -OsVersion windows11 -UserAccountType standardUser -Force

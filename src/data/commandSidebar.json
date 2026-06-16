@@ -20,5 +20,8 @@
   "commands/new-cloudpcsnapshot",
   "commands/remove-cloudpcmaintenancewindow",
   "commands/remove-cloudpcprovisioningpolicy",
-  "commands/restart-cloudpc"
+  "commands/reset-cloudpclocaladminpassword",
+  "commands/restart-cloudpc",
+  "commands/start-cloudpc",
+  "commands/sync-cloudpc"
 ]

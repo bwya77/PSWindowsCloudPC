@@ -32,4 +32,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [New-CloudPCSnapshot](/docs/commands/new-cloudpcsnapshot) | Creates restore point snapshots for one or more Windows 365 Cloud PCs. | Action |
 | [Remove-CloudPCMaintenanceWindow](/docs/commands/remove-cloudpcmaintenancewindow) | Deletes a Windows 365 Cloud PC maintenance window. | Action |
 | [Remove-CloudPCProvisioningPolicy](/docs/commands/remove-cloudpcprovisioningpolicy) | Deletes a Windows 365 Cloud PC provisioning policy. | Action |
+| [Reset-CloudPCLocalAdminPassword](/docs/commands/reset-cloudpclocaladminpassword) | Rotates the local admin password for one or more Windows 365 Cloud PCs. | Action |
 | [Restart-CloudPC](/docs/commands/restart-cloudpc) | Reboots one or more Windows 365 Cloud PCs. | Action |
+| [Start-CloudPC](/docs/commands/start-cloudpc) | Powers on one or more Windows 365 Cloud PCs. | Action |
+| [Sync-CloudPC](/docs/commands/sync-cloudpc) | Syncs one or more Windows 365 Cloud PCs through the Intune managed device action. | Action |

@@ -166,11 +166,12 @@ function Get-GraphEndpointsFromSource {
     param([Parameter(Mandatory)][string]$Path)
 
     $source = Get-Content -Path $Path -Raw
-    [regex]::Matches($source, 'https://graph\.microsoft\.com/[^"`''\s]+') |
+    [regex]::Matches($source, 'https://graph\.microsoft\.com/[^"`\s]+') |
         ForEach-Object {
-            $_.Value -replace 'https://graph\.microsoft\.com/(beta|v1\.0)', '/$1' `
+            $_.Value.Trim("'") -replace 'https://graph\.microsoft\.com/(beta|v1\.0)', '/$1' `
                      -replace '\$escapedCloudPcId', '{id}' `
                      -replace '\$escapedUserId', '{userId}' `
+                     -replace '\$escapedManagedDeviceId', '{managedDeviceId}' `
                      -replace '\$escapedId', '{id}' `
                      -replace '\$cloudPcId', '{id}'
         } |
@@ -224,7 +225,7 @@ $indexRows = foreach ($command in $commands) {
     $help = Get-CommentHelpBlock -Path $sourceFile
     '| [' + $command.Name + '](/docs/commands/' + (ConvertTo-Slug $command.Name) + ') | ' +
         (ConvertTo-MarkdownTableValue $help.Synopsis) + ' | ' +
-        $(if ($command.Verb -in @('Restart','Invoke','New','Set','Remove','Clear')) { 'Action' } else { 'Read' }) + ' |'
+        $(if ($command.Verb -in @('Restart','Invoke','New','Set','Remove','Clear','Start','Stop','Reset','Sync')) { 'Action' } else { 'Read' }) + ' |'
 }
 
 $index = @"

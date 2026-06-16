@@ -32,7 +32,10 @@
         'New-CloudPCSnapshot',
         'Remove-CloudPCMaintenanceWindow',
         'Remove-CloudPCProvisioningPolicy',
-        'Restart-CloudPC'
+        'Reset-CloudPCLocalAdminPassword',
+        'Restart-CloudPC',
+        'Start-CloudPC',
+        'Sync-CloudPC'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
