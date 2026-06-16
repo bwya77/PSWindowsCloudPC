@@ -2,10 +2,13 @@
 
 [![CI](https://github.com/bwya77/PSWindowsCloudPC/actions/workflows/ci.yml/badge.svg)](https://github.com/bwya77/PSWindowsCloudPC/actions/workflows/ci.yml)
 [![Release](https://github.com/bwya77/PSWindowsCloudPC/actions/workflows/release.yml/badge.svg)](https://github.com/bwya77/PSWindowsCloudPC/actions/workflows/release.yml)
+[![Docs](https://github.com/bwya77/PSWindowsCloudPC/actions/workflows/pages.yml/badge.svg)](https://bwya77.github.io/PSWindowsCloudPC/)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/WindowsCloudPC.svg)](https://www.powershellgallery.com/packages/WindowsCloudPC)
 [![Downloads](https://img.shields.io/powershellgallery/dt/WindowsCloudPC.svg)](https://www.powershellgallery.com/packages/WindowsCloudPC)
 
 PowerShell module for managing and querying Windows 365 Cloud PCs via Microsoft Graph (beta).
+
+Detailed documentation is published to GitHub Pages: <https://bwya77.github.io/PSWindowsCloudPC/>.
 
 ## Status
 

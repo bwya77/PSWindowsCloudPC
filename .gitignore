@@ -9,6 +9,7 @@ Thumbs.db
 
 # Build output
 Output/
+_site/
 *.nupkg
 
 # Test results
