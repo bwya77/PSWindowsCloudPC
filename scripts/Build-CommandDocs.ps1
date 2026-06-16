@@ -20,6 +20,7 @@ $RepoRoot = Split-Path $PSScriptRoot -Parent
 $ManifestPath = Join-Path $RepoRoot 'WindowsCloudPC.psd1'
 $PublicPath = Join-Path $RepoRoot 'Public'
 $TestsPath = Join-Path $RepoRoot 'Tests'
+$CommandOutputPath = Join-Path $RepoRoot 'scripts\command-output'
 $RepoUrl = 'https://github.com/bwya77/PSWindowsCloudPC'
 $GalleryUrl = 'https://www.powershellgallery.com/packages/WindowsCloudPC'
 $CodeFence = '```'
@@ -272,6 +273,20 @@ foreach ($command in $commands) {
         $parameterRows = '| None |  |  |  | This command has no custom parameters. |'
     }
 
+    $outputSnippetPath = Join-Path $CommandOutputPath "$((ConvertTo-Slug $command.Name)).md"
+    $outputSection = if (Test-Path -Path $outputSnippetPath) {
+        "## Output`n`n" + (Get-Content -Path $outputSnippetPath -Raw).Trim()
+    }
+    else {
+        ''
+    }
+    $outputMarkdown = if ($outputSection) {
+        "`n$outputSection`n`n"
+    }
+    else {
+        "`n"
+    }
+
     $endpoints = @(Get-GraphEndpointsFromSource -Path $sourceFile)
     $endpointText = if ($endpoints.Count -gt 0) {
         "${CodeFence}text`n$($endpoints -join "`n")`n${CodeFence}"
@@ -325,8 +340,7 @@ ${CodeFence}
 | Name | Type | Required | Aliases | Description |
 | --- | --- | --- | --- | --- |
 $($parameterRows -join "`n")
-
-## Graph endpoints
+$outputMarkdown## Graph endpoints
 
 $endpointText
 

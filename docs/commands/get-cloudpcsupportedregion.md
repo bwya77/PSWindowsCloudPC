@@ -33,6 +33,10 @@ Get-CloudPCSupportedRegion [[-RegionStatus] <string>] [[-SupportedSolution] <str
 | `RegionStatus` | `String` | No |  | Optional filter for region status. Common values include available and restricted. |
 | `SupportedSolution` | `String` | No |  | Optional filter for supported solution. Defaults to windows365. |
 
+## Output
+
+Emits `WindowsCloudPC.SupportedRegion` rows with `Id`, `DisplayName`, `RegionStatus`, `SupportedSolution`, `RegionGroup`, `GeographicLocationType`, and `Raw`.
+
 ## Graph endpoints
 
 ```text

@@ -41,6 +41,36 @@ Get-CloudPCSnapshot -User <string> [<CommonParameters>]
 | `ResolveName` | `SwitchParameter` | No |  | Looks up the Cloud PC when using -Id so CloudPcName contains a friendly<br />managed device name or display name instead of the ID. |
 | `User` | `String` | Yes | `UserPrincipalName`, `UPN` | Gets Cloud PCs for the specified user principal name, then returns<br />snapshots for each one with CloudPcName populated from the Cloud PC object. |
 
+## Output
+
+```plaintext
+Id                   : CPC_00000000-0000-0000-0000-000000000000_00000000-0000-0000-0000-000000000000
+SnapshotId           : CPC_00000000-0000-0000-0000-000000000000_00000000-0000-0000-0000-000000000000
+CloudPcId            : 00000000-0000-0000-0000-000000000000
+CloudPcName          : CPC-USER-01
+Status               : ready
+SnapshotType         : automatic
+CreatedDateTime      : 6/13/2026 8:12:27 AM
+LastRestoredDateTime :
+ExpirationDateTime   :
+HealthCheckStatus    :
+Raw                  : {[healthCheckStatus, ], [createdDateTime, 6/13/2026 1:12:27 PM], [snapshotType, automatic], [lastRestoredDateTime,
+                       ]…}
+
+Id                   : CPC_00000000-0000-0000-0000-000000000000_00000000-0000-0000-0000-000000000000
+SnapshotId           : CPC_00000000-0000-0000-0000-000000000000_00000000-0000-0000-0000-000000000000
+CloudPcId            : 00000000-0000-0000-0000-000000000000
+CloudPcName          : CPC-USER-01
+Status               : ready
+SnapshotType         : automatic
+CreatedDateTime      : 6/12/2026 8:11:54 PM
+LastRestoredDateTime :
+ExpirationDateTime   :
+HealthCheckStatus    :
+Raw                  : {[healthCheckStatus, ], [createdDateTime, 6/13/2026 1:11:54 AM], [snapshotType, automatic], [lastRestoredDateTime,
+                       ]…}
+```
+
 ## Graph endpoints
 
 ```text

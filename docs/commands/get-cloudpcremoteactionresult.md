@@ -37,6 +37,10 @@ Get-CloudPCRemoteActionResult -Id <string> [<CommonParameters>]
 | `CloudPC` | `Object` | Yes |  | A WindowsCloudPC.CloudPC object (as returned by Get-CloudPC). Accepts pipeline input. |
 | `Id` | `String` | Yes | `CloudPcId` | The Cloud PC ID (GUID) when you do not have a CloudPC object handy. |
 
+## Output
+
+Emits `WindowsCloudPC.RemoteActionResult` rows with `CloudPcId`, `CloudPcName`, `ActionName`, `ActionState`, `StartDateTime`, `LastUpdatedDateTime`, `ManagedDeviceId`, `StatusCode`, `StatusMessage`, `HasDownTime`, and `Raw`.
+
 ## Graph endpoints
 
 ```text
