@@ -8,7 +8,7 @@
 
 PowerShell module for managing and querying Windows 365 Cloud PCs via Microsoft Graph (beta).
 
-Detailed documentation is published to GitHub Pages: <https://bwya77.github.io/PSWindowsCloudPC/>.
+Detailed Docusaurus documentation is published to GitHub Pages: <https://bwya77.github.io/PSWindowsCloudPC/>.
 
 ## Status
 

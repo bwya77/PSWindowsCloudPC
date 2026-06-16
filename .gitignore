@@ -10,7 +10,12 @@ Thumbs.db
 # Build output
 Output/
 _site/
+build/
+.docusaurus/
 *.nupkg
+
+# Node / Docusaurus
+node_modules/
 
 # Test results
 TestResults.xml

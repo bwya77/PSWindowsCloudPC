@@ -1,0 +1,23 @@
+{
+  "name": "windows-cloud-pc-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docs:generate": "pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/Build-CommandDocs.ps1",
+    "build": "npm run docs:generate && docusaurus build",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "start": "npm run docs:generate && docusaurus start"
+  },
+  "dependencies": {
+    "@docusaurus/core": "latest",
+    "@docusaurus/preset-classic": "latest",
+    "@mdx-js/react": "latest",
+    "clsx": "latest",
+    "prism-react-renderer": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {}
+}
+

@@ -6,11 +6,18 @@ on:
     paths:
       - 'Public/**'
       - 'Private/**'
+      - 'docs/**'
       - 'WindowsCloudPC.psd1'
       - 'WindowsCloudPC.psm1'
       - 'README.md'
       - 'CHANGELOG.md'
-      - 'scripts/Build-DocsSite.ps1'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'docusaurus.config.js'
+      - 'sidebars.js'
+      - 'src/**'
+      - 'static/**'
+      - 'scripts/Build-CommandDocs.ps1'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -36,9 +43,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build docs site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Docusaurus site
         shell: pwsh
-        run: ./scripts/Build-DocsSite.ps1 -OutputPath ./Output/Site
+        run: npm run build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -46,9 +61,8 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./Output/Site
+          path: ./build
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

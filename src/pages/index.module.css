@@ -1,0 +1,82 @@
+.hero {
+  padding: 6rem 0;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(103, 232, 249, 0.24), transparent 32rem),
+    linear-gradient(135deg, #0b1220 0%, #14213d 100%);
+}
+
+.eyebrow {
+  margin-bottom: 1rem;
+  color: #67e8f9;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  max-width: 850px;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1;
+}
+
+.heroSubtitle {
+  max-width: 760px;
+  color: #cbd5e1;
+  font-size: 1.25rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stats {
+  padding: 2rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+}
+
+.statCard,
+.featureCard {
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
+  background: var(--ifm-card-background-color);
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.statCard span {
+  display: block;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+}
+
+.statCard strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 2.1rem;
+  line-height: 1.1;
+}
+
+.features {
+  padding: 3rem 0 4rem;
+}
+
+.feature {
+  margin-bottom: 1rem;
+}
+
+.featureCard p {
+  margin-bottom: 0;
+}
+
