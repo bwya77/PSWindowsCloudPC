@@ -7,7 +7,8 @@ function Get-CloudPCLaunchDetail {
         Calls the Microsoft Graph v1.0 retrieveCloudPcLaunchDetail function for a Cloud PC.
         The response includes the Cloud PC launch URL and Windows 365 Switch compatibility
         details. When a username is available, the output also includes a Windows App
-        launch URI using the ms-cloudpc:connect protocol.
+        launch URI using the ms-cloudpc:connect protocol. If -UserId is omitted, the
+        cmdlet uses the signed-in Graph account as the launch username when available.
 
         Cloud PCs that are still provisioning might not have launch details yet. In that
         case, Graph can return 404 NotFound. The cmdlet emits a normal result row with
@@ -24,12 +25,14 @@ function Get-CloudPCLaunchDetail {
 
     .PARAMETER UserId
         Optional user ID or UPN for the /users/{userId}/cloudPCs/{id}/retrieveCloudPcLaunchDetail
-        form. If omitted, the cmdlet uses /me/cloudPCs/{id}/retrieveCloudPcLaunchDetail.
+        form. If omitted, the cmdlet uses /me/cloudPCs/{id}/retrieveCloudPcLaunchDetail and uses
+        the signed-in Graph account for the generated Windows App launch URI.
 
     .EXAMPLE
         Get-CloudPCLaunchDetail -Id 'a20d556d-85f7-88cc-bb9c-08d9902bb7bb'
 
-        Gets launch details for a Cloud PC that belongs to the signed-in user.
+        Gets launch details for a Cloud PC that belongs to the signed-in user. The generated
+        Windows App launch URI uses the signed-in Graph account as the username.
 
     .EXAMPLE
         Get-CloudPCLaunchDetail -Id 'a20d556d-85f7-88cc-bb9c-08d9902bb7bb' -UserId 'user@contoso.com'
@@ -58,7 +61,7 @@ function Get-CloudPCLaunchDetail {
     )
 
     begin {
-        Connect-CloudPC | Out-Null
+        $graphContext = Connect-CloudPC
     }
 
     process {
@@ -80,7 +83,17 @@ function Get-CloudPCLaunchDetail {
         }
 
         $escapedCloudPcId = [uri]::EscapeDataString($cloudPcId)
-        $launchUsername = if ([string]::IsNullOrWhiteSpace($UserId)) { $null } else { $UserId }
+        $launchUsername = if ([string]::IsNullOrWhiteSpace($UserId)) {
+            if ($graphContext -and -not [string]::IsNullOrWhiteSpace($graphContext.Account)) {
+                $graphContext.Account
+            }
+            else {
+                $null
+            }
+        }
+        else {
+            $UserId
+        }
         if ([string]::IsNullOrWhiteSpace($UserId)) {
             $uri = "https://graph.microsoft.com/v1.0/me/cloudPCs/$escapedCloudPcId/retrieveCloudPcLaunchDetail"
         }

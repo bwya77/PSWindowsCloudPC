@@ -11,7 +11,11 @@ AfterAll {
 Describe 'Get-CloudPCLaunchDetail' {
 
     BeforeEach {
-        Mock -ModuleName WindowsCloudPC Connect-CloudPC { }
+        Mock -ModuleName WindowsCloudPC Connect-CloudPC {
+            [pscustomobject]@{
+                Account = 'signedin@contoso.com'
+            }
+        }
         Mock -ModuleName WindowsCloudPC Invoke-MgGraphRequest {
             @{
                 cloudPcId                                     = 'cpc-1'
@@ -44,7 +48,7 @@ Describe 'Get-CloudPCLaunchDetail' {
         $row.PSObject.TypeNames | Should -Contain 'WindowsCloudPC.CloudPCLaunchDetail'
         $row.CloudPcId | Should -Be 'cpc-1'
         $row.CloudPcLaunchUrl | Should -Be 'https://rdweb.example.test/launch/cpc-1'
-        $row.WindowsAppLaunchUri | Should -BeNullOrEmpty
+        $row.WindowsAppLaunchUri | Should -Be 'ms-cloudpc:connect?cpcid=cpc-1&username=signedin%40contoso.com&environment=PROD&source=IWP&rdlaunchurl=https%3A%2F%2Frdweb.example.test%2Flaunch%2Fcpc-1'
         $row.Windows365SwitchCompatible | Should -BeFalse
         $row.Windows365SwitchCompatibilityFailureReasonType | Should -Be 'osVersionNotSupported'
         $row.LaunchDetailStatus | Should -Be 'Available'
@@ -75,7 +79,7 @@ Describe 'Get-CloudPCLaunchDetail' {
         }
     }
 
-    It 'uses /me for piped Cloud PCs with no assigned user' {
+    It 'uses /me and the signed-in account for piped Cloud PCs with no assigned user' {
         $cpc = [pscustomobject]@{
             PSTypeName = 'WindowsCloudPC.CloudPC'
             Id         = 'cpc-from-pipeline'
@@ -85,10 +89,19 @@ Describe 'Get-CloudPCLaunchDetail' {
         $row = $cpc | Get-CloudPCLaunchDetail
 
         $row.UserId | Should -Be 'me'
-        $row.WindowsAppLaunchUri | Should -BeNullOrEmpty
+        $row.WindowsAppLaunchUri | Should -Be 'ms-cloudpc:connect?cpcid=cpc-1&username=signedin%40contoso.com&environment=PROD&source=IWP&rdlaunchurl=https%3A%2F%2Frdweb.example.test%2Flaunch%2Fcpc-1'
         Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 1 -Exactly -ParameterFilter {
             $Uri -like 'https://graph.microsoft.com/v1.0/me/cloudPCs/cpc-from-pipeline/retrieveCloudPcLaunchDetail'
         }
+    }
+
+    It 'leaves Windows App launch URI empty when no username is available' {
+        Mock -ModuleName WindowsCloudPC Connect-CloudPC { [pscustomobject]@{ Account = $null } }
+
+        $row = Get-CloudPCLaunchDetail -Id 'cpc-1'
+
+        $row.UserId | Should -Be 'me'
+        $row.WindowsAppLaunchUri | Should -BeNullOrEmpty
     }
 
     It 'queries each Cloud PC piped in' {

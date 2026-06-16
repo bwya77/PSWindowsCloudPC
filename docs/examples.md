@@ -56,7 +56,7 @@ Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -Force -PassThru
 ```powershell
 Get-CloudPC |
     Get-CloudPCLaunchDetail |
-    Format-Table CloudPcName,UserPrincipalName,State,LastLoginDateTime
+    Format-Table CloudPcName,UserId,LaunchDetailStatus,Windows365SwitchCompatible,WindowsAppLaunchUri
 ```
 
 ## List restore point snapshots for a user
