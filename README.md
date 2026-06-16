@@ -46,6 +46,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
+| `Get-CloudPCSupportedRegion` | List Windows 365 supported Cloud PC regions from Graph beta, including region status, supported solution, region group, and geographic location type. Supports client-side filters for status, solution, region group, and geography. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
@@ -79,6 +80,14 @@ Get-CloudPC -Type Dedicated | Get-CloudPCUsage | Export-Csv .\dedicated-usage.cs
 Get-CloudPC -UserPrincipalName 'user@contoso.com' |
     Get-CloudPCLaunchDetail -UserId 'user@contoso.com' |
     Format-Table CloudPcName,LaunchDetailStatus,Windows365SwitchCompatible,WindowsAppLaunchUri
+
+# List supported Windows 365 Cloud PC regions
+Get-CloudPCSupportedRegion |
+    Sort-Object DisplayName |
+    Format-Table DisplayName,RegionStatus,RegionGroup,GeographicLocationType
+
+# Find available regions in a specific region group
+Get-CloudPCSupportedRegion -RegionStatus available -RegionGroup usEast
 
 # Reboot a single Cloud PC and confirm the action landed
 $pc = Get-CloudPC | Where-Object Name -eq 'CFD-brad-TUFL7'

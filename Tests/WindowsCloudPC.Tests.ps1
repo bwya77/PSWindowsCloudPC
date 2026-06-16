@@ -6,6 +6,7 @@ BeforeDiscovery {
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
+        'Get-CloudPCSupportedRegion',
         'Get-CloudPCUsage',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',

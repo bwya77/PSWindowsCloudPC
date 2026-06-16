@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.7] - 2026-06-16
 ### Added
+- `Get-CloudPCSupportedRegion` - lists Windows 365 supported Cloud PC regions
+  from Graph beta (`GET /deviceManagement/virtualEndpoint/supportedRegions`),
+  including `RegionStatus`, `SupportedSolution`, `RegionGroup`, and
+  `GeographicLocationType`. Supports client-side filters for status, solution,
+  region group, and geographic location type.
 - `Get-CloudPCLaunchDetail` - gets Graph launch details for Cloud PCs
   (`GET /me/cloudPCs/{id}/retrieveCloudPcLaunchDetail` or
   `GET /users/{userId}/cloudPCs/{id}/retrieveCloudPcLaunchDetail`), emits
