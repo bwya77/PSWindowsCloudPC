@@ -15,7 +15,8 @@ function Restart-CloudPC {
         Connect-CloudPC if the current Graph session does not already have it.
 
     .PARAMETER CloudPC
-        A WindowsCloudPC.CloudPC object (as returned by Get-CloudPC). Accepts pipeline input.
+        A WindowsCloudPC.CloudPC object (as returned by Get-CloudPC), or a Cloud PC name or ID.
+        Accepts pipeline input.
 
     .PARAMETER Id
         The Cloud PC ID (GUID) when you do not have a CloudPC object handy.
@@ -46,7 +47,6 @@ function Restart-CloudPC {
     [OutputType('WindowsCloudPC.RestartResult')]
     param(
         [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'ByObject')]
-        [PSTypeName('WindowsCloudPC.CloudPC')]
         [object]$CloudPC,
 
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ById')]
@@ -67,8 +67,29 @@ function Restart-CloudPC {
 
     process {
         if ($PSCmdlet.ParameterSetName -eq 'ByObject') {
-            $cloudPcId   = $CloudPC.Id
-            $cloudPcName = if ($CloudPC.Name) { $CloudPC.Name } else { $CloudPC.Id }
+            if ($CloudPC -is [string]) {
+                if ([string]::IsNullOrWhiteSpace($CloudPC)) {
+                    Write-Error "Restart-CloudPC: Cloud PC name or Id is empty; nothing to reboot."
+                    return
+                }
+
+                $cloudPcMatches = @(Get-CloudPC | Where-Object { $_.Id -eq $CloudPC -or $_.Name -eq $CloudPC })
+                if ($cloudPcMatches.Count -eq 0) {
+                    Write-Error "Restart-CloudPC: Cloud PC '$CloudPC' was not found. Pass a Cloud PC object from Get-CloudPC, an exact Cloud PC name, or an Id."
+                    return
+                }
+                if ($cloudPcMatches.Count -gt 1) {
+                    Write-Error "Restart-CloudPC: Cloud PC '$CloudPC' matched more than one object. Pipe the exact object from Get-CloudPC or use -Id."
+                    return
+                }
+
+                $cloudPcId   = $cloudPcMatches[0].Id
+                $cloudPcName = if ($cloudPcMatches[0].Name) { $cloudPcMatches[0].Name } else { $cloudPcMatches[0].Id }
+            }
+            else {
+                $cloudPcId   = $CloudPC.Id
+                $cloudPcName = if ($CloudPC.Name) { $CloudPC.Name } else { $CloudPC.Id }
+            }
         }
         else {
             $cloudPcId   = $Id

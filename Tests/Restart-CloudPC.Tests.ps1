@@ -57,6 +57,38 @@ Describe 'Restart-CloudPC' {
         Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 3 -Exactly
     }
 
+    It 'accepts an exact Cloud PC name for the CloudPC parameter' {
+        Mock -ModuleName WindowsCloudPC Get-CloudPC {
+            [pscustomobject]@{ PSTypeName = 'WindowsCloudPC.CloudPC'; Id = 'cpc-from-name'; Name = 'CPC-BRAD-01' }
+        }
+
+        Restart-CloudPC -CloudPC 'CPC-BRAD-01' -Force -Confirm:$false
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 1 -Exactly -ParameterFilter {
+            $Uri -like '*cloudPCs/cpc-from-name/reboot'
+        }
+    }
+
+    It 'accepts an exact Cloud PC Id for the CloudPC parameter' {
+        Mock -ModuleName WindowsCloudPC Get-CloudPC {
+            [pscustomobject]@{ PSTypeName = 'WindowsCloudPC.CloudPC'; Id = 'cpc-from-string-id'; Name = 'CPC-BRAD-01' }
+        }
+
+        Restart-CloudPC -CloudPC 'cpc-from-string-id' -Force -Confirm:$false
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 1 -Exactly -ParameterFilter {
+            $Uri -like '*cloudPCs/cpc-from-string-id/reboot'
+        }
+    }
+
+    It 'does not call Graph when a Cloud PC string cannot be resolved' {
+        Mock -ModuleName WindowsCloudPC Get-CloudPC { @() }
+
+        Restart-CloudPC -CloudPC 'CPC-MISSING' -Force -Confirm:$false -ErrorAction SilentlyContinue
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 0 -Exactly
+    }
+
     It 'is silent by default on success' {
         $result = Restart-CloudPC -Id 'cpc-1' -Force -Confirm:$false
         $result | Should -BeNullOrEmpty

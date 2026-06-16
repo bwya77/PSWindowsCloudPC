@@ -12,7 +12,7 @@ Detailed Docusaurus documentation is published to GitHub Pages: <https://bwya77.
 
 ## Status
 
-Early — read-only queries plus a small set of write actions (reboot and reprovision).
+Early - read-only queries plus write actions for reboot, reprovision, snapshots, provisioning policies, and maintenance windows.
 
 ## Requirements
 
@@ -50,6 +50,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
 | `Get-CloudPCLicensingAllotment` | List Microsoft Graph cloud licensing allotments from Graph beta. Supports single allotment lookup plus `$select`, `$expand`, `$filter`, `$top`, and `$apply` query shaping. |
+| `Get-CloudPCMaintenanceWindow` | List Cloud PC maintenance windows from Graph beta. Supports exact display name lookup, ID lookup, and optional assignment expansion with resolved group names. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
 | `Get-CloudPCSettingProfile` | List Windows 365 setting profiles from Graph beta. Use `-Id` for a single profile and `-IncludeDetails` to expand assignments and settings, including object and list setting children. |
 | `Get-CloudPCSnapshot` | List Cloud PC restore point snapshots from Graph beta. Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`, with friendly Cloud PC names and verbose progress output. |
@@ -57,8 +58,10 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCUserSetting` | List Windows 365 Cloud PC user settings from Graph beta, including reset, restore point, local admin, cross-region disaster recovery, notification, and assignment details. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
+| `New-CloudPCMaintenanceWindow` | Create Cloud PC maintenance windows from weekday and weekend times, or custom schedule objects. Uses the portal-style weekday plus weekend payload, supports `-WhatIf`, two-hour minimum validation, optional group assignment, and result metadata. |
 | `New-CloudPCProvisioningPolicy` | Create a provisioning policy from an export. Supports `-WhatIf`, display name and description overrides, and optional assignment recreation with `-Assign`. |
 | `New-CloudPCSnapshot` | Create Cloud PC restore point snapshots via Graph beta. Supports one Cloud PC by ID, object, or friendly name, plus `-All`, `-User`, and `-ProvisioningPolicyId` batch modes. Emits one result row per target. |
+| `Remove-CloudPCMaintenanceWindow` | Delete a Cloud PC maintenance window by ID, exact display name, or pipeline object. Clears assignments before delete to avoid Graph 409 conflicts. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. |
 | `Remove-CloudPCProvisioningPolicy` | Delete a provisioning policy by ID or pipeline object. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. Graph cannot delete policies that are still in use. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 
@@ -94,6 +97,22 @@ New-CloudPCProvisioningPolicy -Path .\policy-export.json -DisplayName 'Copied Fl
 # Delete a copied provisioning policy
 Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -WhatIf
 Remove-CloudPCProvisioningPolicy -Id '<policy-id>' -Force -PassThru
+
+# List maintenance windows and assigned groups
+Get-CloudPCMaintenanceWindow -IncludeAssignments |
+    Format-Table DisplayName,ScheduleSummary,AssignedGroupNames
+
+# Create a maintenance window and assign it to a group
+New-CloudPCMaintenanceWindow `
+    -DisplayName 'Off-Hours Resize Window' `
+    -WeekdayStartTime '01:00' `
+    -WeekdayEndTime '05:00' `
+    -GroupId '<group-id>' `
+    -Force |
+    Format-Table DisplayName,Status,AssignmentStatus,AssignmentsApplied
+
+# Remove a maintenance window by exact display name, clearing assignments first
+Remove-CloudPCMaintenanceWindow -DisplayName 'Off-Hours Resize Window' -WhatIf
 
 # Drill into a single policy's Cloud PCs
 Get-CloudPCByProvisioningPolicy |

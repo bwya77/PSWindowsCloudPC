@@ -17,6 +17,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCByProvisioningPolicy](/docs/commands/get-cloudpcbyprovisioningpolicy) | Groups Cloud PCs under their provisioning policies and returns one row per policy. | Read |
 | [Get-CloudPCLaunchDetail](/docs/commands/get-cloudpclaunchdetail) | Gets launch details for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCLicensingAllotment](/docs/commands/get-cloudpclicensingallotment) | Returns Microsoft Graph cloud licensing allotments. | Read |
+| [Get-CloudPCMaintenanceWindow](/docs/commands/get-cloudpcmaintenancewindow) | Returns Windows 365 Cloud PC maintenance windows. | Read |
 | [Get-CloudPCProvisioningPolicy](/docs/commands/get-cloudpcprovisioningpolicy) | Returns Windows 365 Cloud PC provisioning policies, with assigned groups resolved. | Read |
 | [Get-CloudPCRemoteActionResult](/docs/commands/get-cloudpcremoteactionresult) | Returns the recent remote-action history (restart, reprovision, restore, etc.) for a Cloud PC. | Read |
 | [Get-CloudPCSettingProfile](/docs/commands/get-cloudpcsettingprofile) | Returns Windows 365 Cloud PC setting profiles. | Read |
@@ -26,7 +27,9 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCUserSetting](/docs/commands/get-cloudpcusersetting) | Returns Windows 365 Cloud PC user settings. | Read |
 | [Invoke-CloudPCPolicyReprovision](/docs/commands/invoke-cloudpcpolicyreprovision) | Reprovisions Cloud PCs assigned to a provisioning policy. | Action |
 | [Invoke-CloudPCReprovision](/docs/commands/invoke-cloudpcreprovision) | Reprovisions one or more Windows 365 Cloud PCs. | Action |
+| [New-CloudPCMaintenanceWindow](/docs/commands/new-cloudpcmaintenancewindow) | Creates a Windows 365 Cloud PC maintenance window. | Action |
 | [New-CloudPCProvisioningPolicy](/docs/commands/new-cloudpcprovisioningpolicy) | Creates a Windows 365 Cloud PC provisioning policy from an export. | Action |
 | [New-CloudPCSnapshot](/docs/commands/new-cloudpcsnapshot) | Creates restore point snapshots for one or more Windows 365 Cloud PCs. | Action |
+| [Remove-CloudPCMaintenanceWindow](/docs/commands/remove-cloudpcmaintenancewindow) | Deletes a Windows 365 Cloud PC maintenance window. | Action |
 | [Remove-CloudPCProvisioningPolicy](/docs/commands/remove-cloudpcprovisioningpolicy) | Deletes a Windows 365 Cloud PC provisioning policy. | Action |
 | [Restart-CloudPC](/docs/commands/restart-cloudpc) | Reboots one or more Windows 365 Cloud PCs. | Action |

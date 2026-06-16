@@ -6,6 +6,7 @@ BeforeDiscovery {
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCLicensingAllotment',
+        'Get-CloudPCMaintenanceWindow',
         'Get-CloudPCProvisioningPolicy',
         'Get-CloudPCRemoteActionResult',
         'Get-CloudPCSettingProfile',
@@ -15,8 +16,10 @@ BeforeDiscovery {
         'Get-CloudPCUserSetting',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
+        'New-CloudPCMaintenanceWindow',
         'New-CloudPCProvisioningPolicy',
         'New-CloudPCSnapshot',
+        'Remove-CloudPCMaintenanceWindow',
         'Remove-CloudPCProvisioningPolicy',
         'Restart-CloudPC'
     )

@@ -24,7 +24,7 @@ Connect-CloudPC if the current Graph session does not already have it.
 
 ```powershell
 
-Restart-CloudPC -CloudPC <CloudPC> [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]
+Restart-CloudPC -CloudPC <Object> [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]
 
 Restart-CloudPC -Id <string> [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]
 
@@ -34,7 +34,7 @@ Restart-CloudPC -Id <string> [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonP
 
 | Name | Type | Required | Aliases | Description |
 | --- | --- | --- | --- | --- |
-| `CloudPC` | `Object` | Yes |  | A WindowsCloudPC.CloudPC object (as returned by Get-CloudPC). Accepts pipeline input. |
+| `CloudPC` | `Object` | Yes |  | A WindowsCloudPC.CloudPC object (as returned by Get-CloudPC), or a Cloud PC name or ID.<br />Accepts pipeline input. |
 | `Force` | `SwitchParameter` | No |  | Suppress the confirmation prompt. Equivalent to -Confirm:$false. |
 | `Id` | `String` | Yes | `CloudPcId` | The Cloud PC ID (GUID) when you do not have a CloudPC object handy. |
 | `PassThru` | `SwitchParameter` | No |  | Emit a WindowsCloudPC.RestartResult object describing the outcome of each reboot request.<br />By default the cmdlet is silent on success (mirrors Restart-Computer behavior). |

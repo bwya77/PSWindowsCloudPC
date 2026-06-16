@@ -5,6 +5,7 @@
   "commands/get-cloudpcbyprovisioningpolicy",
   "commands/get-cloudpclaunchdetail",
   "commands/get-cloudpclicensingallotment",
+  "commands/get-cloudpcmaintenancewindow",
   "commands/get-cloudpcprovisioningpolicy",
   "commands/get-cloudpcremoteactionresult",
   "commands/get-cloudpcsettingprofile",
@@ -14,8 +15,10 @@
   "commands/get-cloudpcusersetting",
   "commands/invoke-cloudpcpolicyreprovision",
   "commands/invoke-cloudpcreprovision",
+  "commands/new-cloudpcmaintenancewindow",
   "commands/new-cloudpcprovisioningpolicy",
   "commands/new-cloudpcsnapshot",
+  "commands/remove-cloudpcmaintenancewindow",
   "commands/remove-cloudpcprovisioningpolicy",
   "commands/restart-cloudpc"
 ]
