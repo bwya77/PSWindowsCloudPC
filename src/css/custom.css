@@ -22,35 +22,85 @@
 }
 
 :root[data-theme='dark'] {
-  --ifm-color-primary: #43b7d6;
-  --ifm-color-primary-dark: #2db7d6;
-  --ifm-color-primary-darker: #2d8ec7;
-  --ifm-color-primary-darkest: #4b6f9a;
-  --ifm-color-primary-light: #59a2c5;
-  --ifm-color-primary-lighter: #8cc7dc;
-  --ifm-color-primary-lightest: #ccecf5;
-  --ifm-background-color: #1e1e1e;
-  --ifm-background-surface-color: #262626;
-  --ifm-card-background-color: #2b2e2f;
-  --ifm-font-color-base: #dadada;
-  --ifm-font-color-secondary: #bababa;
-  --ifm-heading-color: #e6f7fb;
-  --ifm-link-color: #43b7d6;
-  --ifm-link-hover-color: #2d8ec7;
-  --ifm-menu-color-background-active: rgba(67, 183, 214, 0.12);
-  --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.07);
-  --ifm-code-background: #111111;
-  --ifm-pre-background: #111111;
-  --ifm-table-border-color: #3f3f3f;
-  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
-  --wcp-border-color: #3f3f3f;
-  --wcp-hero-glow-rgb: 45, 183, 214;
+  --ifm-color-primary: #38bdf8;
+  --ifm-color-primary-dark: #0ea5e9;
+  --ifm-color-primary-darker: #0284c7;
+  --ifm-color-primary-darkest: #0369a1;
+  --ifm-color-primary-light: #67e8f9;
+  --ifm-color-primary-lighter: #a5f3fc;
+  --ifm-color-primary-lightest: #cffafe;
+  --ifm-background-color: #07111f;
+  --ifm-background-surface-color: #0b1728;
+  --ifm-card-background-color: #111d31;
+  --ifm-font-color-base: #e6edf7;
+  --ifm-font-color-secondary: #a7b4c7;
+  --ifm-heading-color: #f6fbff;
+  --ifm-link-color: #67e8f9;
+  --ifm-link-hover-color: #a5f3fc;
+  --ifm-navbar-background-color: #08111f;
+  --ifm-footer-background-color: #050b14;
+  --ifm-menu-color: #d7e1ee;
+  --ifm-menu-color-active: #67e8f9;
+  --ifm-menu-color-background-active: rgba(56, 189, 248, 0.13);
+  --ifm-menu-color-background-hover: rgba(148, 163, 184, 0.11);
+  --ifm-code-background: #06101c;
+  --ifm-pre-background: #06101c;
+  --ifm-table-border-color: #253650;
+  --ifm-toc-border-color: #253650;
+  --ifm-color-emphasis-0: #050b14;
+  --ifm-color-emphasis-100: #08111f;
+  --ifm-color-emphasis-200: #0d1b2d;
+  --ifm-color-emphasis-300: #15243a;
+  --ifm-color-emphasis-400: #253650;
+  --ifm-color-emphasis-500: #40536e;
+  --ifm-color-emphasis-600: #718198;
+  --ifm-color-emphasis-700: #a7b4c7;
+  --ifm-color-emphasis-800: #d7e1ee;
+  --ifm-color-emphasis-900: #f6fbff;
+  --docusaurus-highlighted-code-line-bg: rgba(56, 189, 248, 0.16);
+  --wcp-border-color: #253650;
+  --wcp-hero-glow-rgb: 56, 189, 248;
+  --wcp-hero-glow-secondary-rgb: 99, 102, 241;
+  --wcp-interactive-surface: #38bdf8;
+  --wcp-interactive-surface-hover: #67e8f9;
+  --wcp-muted-text: #a7b4c7;
+  --wcp-card-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
 .navbar {
   border-bottom: 1px solid var(--wcp-border-color);
-  background: color-mix(in srgb, var(--ifm-background-surface-color) 94%, transparent);
+  background: color-mix(in srgb, var(--ifm-navbar-background-color, var(--ifm-background-surface-color)) 94%, transparent);
   backdrop-filter: blur(10px);
+}
+
+:root[data-theme='dark'] .navbar,
+:root[data-theme='dark'] .footer {
+  color: var(--ifm-font-color-base);
+}
+
+:root[data-theme='dark'] .button--primary {
+  color: #04111f;
+  background: var(--wcp-interactive-surface);
+  border-color: var(--wcp-interactive-surface);
+  box-shadow: 0 12px 24px rgba(56, 189, 248, 0.18);
+}
+
+:root[data-theme='dark'] .button--primary:hover {
+  color: #04111f;
+  background: var(--wcp-interactive-surface-hover);
+  border-color: var(--wcp-interactive-surface-hover);
+}
+
+:root[data-theme='dark'] .button--secondary {
+  color: #e6edf7;
+  background: rgba(215, 225, 238, 0.08);
+  border-color: #40536e;
+}
+
+:root[data-theme='dark'] .button--secondary:hover {
+  color: #f6fbff;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
 }
 
 .table-of-contents__link {
@@ -59,6 +109,22 @@
 
 code {
   border: 1px solid var(--wcp-border-color);
+}
+
+:root[data-theme='dark'] code,
+:root[data-theme='dark'] pre {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme='dark'] .theme-doc-sidebar-container {
+  border-right-color: var(--wcp-border-color);
+}
+
+:root[data-theme='dark'] .pagination-nav__link,
+:root[data-theme='dark'] .theme-admonition,
+:root[data-theme='dark'] .card {
+  background: var(--ifm-card-background-color);
+  border-color: var(--wcp-border-color);
 }
 
 .theme-doc-markdown {
