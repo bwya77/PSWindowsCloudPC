@@ -9,6 +9,10 @@ function Get-CloudPC {
         into Get-CloudPCUsage, Where-Object, Format-Table, etc. The raw Graph object is preserved
         on the .Raw property.
 
+        The request selects connectivityResult and sends
+        Prefer: include-unknown-enum-members so Graph returns evolvable enum
+        values such as inUse and underServiceMaintenance.
+
     .PARAMETER ProvisioningPolicyId
         Filter to a single provisioning policy.
 
@@ -61,7 +65,12 @@ function Get-CloudPC {
                '&$top=50' +
                '&$orderBy=lastModifiedDateTime%20desc'
 
-        Invoke-GraphPaged -Uri $uri | ForEach-Object {
+        $headers = @{
+            ConsistencyLevel = 'eventual'
+            Prefer           = 'include-unknown-enum-members'
+        }
+
+        Invoke-GraphPaged -Uri $uri -Headers $headers | ForEach-Object {
             $raw      = $_
             $isShared = ($raw.provisioningType -eq 'sharedByEntraGroup')
 

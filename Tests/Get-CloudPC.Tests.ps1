@@ -91,6 +91,13 @@ Describe 'Get-CloudPC' {
         (Get-CloudPC | Select-Object -First 1).Raw | Should -Not -BeNullOrEmpty
     }
 
+    It 'requests evolvable connectivityResult enum values' {
+        Get-CloudPC | Out-Null
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -ParameterFilter {
+            $Headers.Prefer -eq 'include-unknown-enum-members'
+        }
+    }
+
     It 'accepts ProvisioningPolicyId from pipeline by property name' {
         $piped = [pscustomobject]@{ ProvisioningPolicyId = 'pol-shared' } | Get-CloudPC
         $piped | Should -Not -BeNullOrEmpty

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   history can lag for shared devices. Shared Cloud PCs still use connectivity
   history to populate last sign-in timestamps, and `available` now maps to
   `SignInStatus = NotSignedIn`.
+- `Get-CloudPC` now sends `Prefer: include-unknown-enum-members` when selecting
+  `connectivityResult` so Graph returns evolvable enum values such as `inUse`
+  and `underServiceMaintenance`.
 
 ## [0.1.15] - 2026-06-16
 ## [0.1.14] - 2026-06-16

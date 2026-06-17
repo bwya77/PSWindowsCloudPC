@@ -235,6 +235,10 @@ that history can lag, but they do use connectivity history to populate
 `LastActiveTime` and `DaysSinceLastSignIn`. Endpoint status `available` maps to
 `SignInStatus = NotSignedIn`, and `inUse` maps to `SignedIn`.
 
+`Get-CloudPC` requests `connectivityResult` with `$select` and sends
+`Prefer: include-unknown-enum-members` so Microsoft Graph returns evolvable enum
+values such as `inUse` and `underServiceMaintenance`.
+
 For dedicated Cloud PCs, `Get-CloudPCUsage` uses Graph beta
 `getCloudPcConnectivityHistory`. The latest successful `Connection Started`
 event with no newer user-connection terminal event maps to `inUse`; otherwise

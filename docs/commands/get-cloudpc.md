@@ -15,6 +15,10 @@ normalized PSCustomObjects (PSTypeName = 'WindowsCloudPC.CloudPC') suitable for 
 into Get-CloudPCUsage, Where-Object, Format-Table, etc. The raw Graph object is preserved
 on the .Raw property.
 
+The request selects connectivityResult and sends
+Prefer: include-unknown-enum-members so Graph returns evolvable enum
+values such as inUse and underServiceMaintenance.
+
 ## Syntax
 
 ```powershell
