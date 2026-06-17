@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- `Get-CloudPCUsage` now uses Graph beta
+  `cloudPCs/{id}/getCloudPcConnectivityHistory` for dedicated Cloud PC usage
+  state, while shared Cloud PCs always use the near-instant
+  `cloudPC.connectivityResult.status` endpoint value because connectivity
+  history can lag for shared devices. Shared Cloud PCs still use connectivity
+  history to populate last sign-in timestamps, and `available` now maps to
+  `SignInStatus = NotSignedIn`.
 
 ## [0.1.15] - 2026-06-16
 ## [0.1.14] - 2026-06-16

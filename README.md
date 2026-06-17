@@ -46,7 +46,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. |
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
-| `Get-CloudPCUsage` | For each Cloud PC, report who is signed in and whether it is `inUse` / `available`, plus `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. Works for shared **and** dedicated. |
+| `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use connectivity history for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
@@ -228,16 +228,18 @@ Get-CloudPC | Get-CloudPCRemoteActionResult |
 
 ## How `UsageStatus` is determined
 
-`Get-CloudPCUsage` uses the Graph beta `/reports/getRealTimeRemoteConnectionStatus`
-report as its **primary** signal for every Cloud PC (shared and dedicated). The
-report's `SignInStatus` (`SignedIn` / `NotSignedIn`) maps to `UsageStatus`
-(`inUse` / `available`), and the report also gives you `DaysSinceLastSignIn` and
-`LastActiveTime` for free.
+For shared Cloud PCs, `Get-CloudPCUsage` uses the Cloud PC endpoint's
+`connectivityResult.status` because it updates almost immediately for shared
+devices. Shared PCs do not use connectivity history for `UsageStatus` because
+that history can lag, but they do use connectivity history to populate
+`LastActiveTime` and `DaysSinceLastSignIn`. Endpoint status `available` maps to
+`SignInStatus = NotSignedIn`, and `inUse` maps to `SignedIn`.
 
-If the report endpoint is unreachable for a given PC, `Get-CloudPCUsage` falls
-back to the Cloud PC's own `connectivityResult.status`. Cloud PCs that have
-never been signed into (no sign-in history yet) are surfaced as
-`available` / `NotSignedIn` rather than `unknown`.
+For dedicated Cloud PCs, `Get-CloudPCUsage` uses Graph beta
+`getCloudPcConnectivityHistory`. The latest successful `Connection Started`
+event with no newer user-connection terminal event maps to `inUse`; otherwise
+the PC maps to `available`. If connectivity history is unavailable, the function
+falls back to `connectivityResult.status`.
 
 ## Releases
 

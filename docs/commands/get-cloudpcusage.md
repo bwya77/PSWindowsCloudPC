@@ -10,22 +10,26 @@ Reports who is signed in to each Cloud PC and whether it is in use or available.
 
 ## Description
 
-Calls the beta /reports/getRealTimeRemoteConnectionStatus(cloudPcId='...') endpoint
-per Cloud PC — the same signal the Intune admin center's "Sign in status" column
-uses — and enriches it with the current user from the matching Intune managedDevice
-(dedicated) or sharedDeviceDetail (shared).
+Uses the Cloud PC endpoint's connectivityResult.status for shared Cloud
+PCs because that signal updates almost immediately for shared devices.
+It still reads getCloudPcConnectivityHistory for last sign-in timestamps.
+Dedicated Cloud PCs use the beta getCloudPcConnectivityHistory endpoint
+to infer whether the most recent user connection event is an active
+connection. The result is enriched with the current user from the
+matching Intune managedDevice (dedicated) or sharedDeviceDetail (shared).
 
 UsageStatus values:
-inUse         A user is currently signed in (SignInStatus = SignedIn)
-available     Reachable, nobody signed in (SignInStatus = NotSignedIn)
+inUse         A shared endpoint or dedicated connectivity event says a user is signed in
+available     Reachable, nobody signed in or assigned
 unavailable   The Cloud PC service marks the PC as unreachable
 failed        Last connectivity check failed
 unknown       Neither signal returned anything (rare — usually means a brand
 new PC whose first telemetry hasn't landed yet)
 
-The real-time report is the primary source of truth. If it fails (transient Graph
-error, beta endpoint hiccup, etc.) the function falls back to the cloudPC's own
-connectivityResult.status so you still get a useful value.
+Source of truth by provisioning type:
+Shared      cloudPC.connectivityResult.status from the Cloud PC endpoint.
+Connectivity history enriches LastActiveTime only.
+Dedicated   getCloudPcConnectivityHistory, then cloudPC.connectivityResult.status.
 
 CurrentUser* fields are populated independently of UsageStatus:
 Shared      From sharedDeviceDetail.assignedToUserPrincipalName.

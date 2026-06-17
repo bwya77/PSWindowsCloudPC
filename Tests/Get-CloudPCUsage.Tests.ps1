@@ -20,16 +20,18 @@ Describe 'Get-CloudPCUsage' {
             [pscustomobject]@{ Id = 'uid-alice'; Upn = 'alice@example.com'; DisplayName = 'Alice Example' }
         }
 
-        # Default: real-time report says "no one signed in".
-        Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -MockWith {
-            [pscustomobject]@{
-                ManagedDeviceName   = 'unused'
-                CloudPcId           = $CloudPcId
-                DaysSinceLastSignIn = 99
-                SignInStatus        = 'NotSignedIn'
-                LastActiveTime      = (Get-Date).AddDays(-99)
-                Raw                 = @{}
-            }
+        Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -MockWith {
+            @(
+                [pscustomobject]@{
+                    ActivityId    = 'activity-default'
+                    EventDateTime = (Get-Date).AddDays(-99)
+                    EventType     = 'userConnection'
+                    EventName     = 'Connection Finished'
+                    EventResult   = 'success'
+                    Message       = ''
+                    Raw           = @{}
+                }
+            )
         }
     }
 
@@ -72,28 +74,80 @@ Describe 'Get-CloudPCUsage' {
                 }
             }
 
-            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-shared-1' } -MockWith {
-                [pscustomobject]@{
-                    ManagedDeviceName   = 'CPC-SHARED-01'
-                    CloudPcId           = 'cpc-shared-1'
-                    DaysSinceLastSignIn = 0
-                    SignInStatus        = 'SignedIn'
-                    LastActiveTime      = (Get-Date)
-                    Raw                 = @{}
-                }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-shared-1' } -MockWith {
+                @(
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-shared'
+                        EventDateTime = (Get-Date)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Started'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                )
             }
         }
 
-        It 'reports inUse when the real-time report says SignedIn' {
-            ($SharedPc | Get-CloudPCUsage).UsageStatus | Should -Be 'inUse'
+        It 'reports the shared endpoint connectivityResult' {
+            ($SharedPc | Get-CloudPCUsage).UsageStatus | Should -Be 'available'
         }
 
-        It 'surfaces SignInStatus on the output object' {
-            ($SharedPc | Get-CloudPCUsage).SignInStatus | Should -Be 'SignedIn'
+        It 'maps shared available endpoint status to NotSignedIn' {
+            ($SharedPc | Get-CloudPCUsage).SignInStatus | Should -Be 'NotSignedIn'
         }
 
-        It 'surfaces LastActiveTime on the output object' {
-            ($SharedPc | Get-CloudPCUsage).LastActiveTime | Should -BeOfType [datetime]
+        It 'uses connectivity history to enrich shared last sign-in time' {
+            $result = $SharedPc | Get-CloudPCUsage
+
+            $result.LastActiveTime | Should -BeOfType [datetime]
+            $result.DaysSinceLastSignIn | Should -Be 0
+            Should -Invoke -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -Times 1 -Exactly -ParameterFilter {
+                $CloudPcId -eq 'cpc-shared-1'
+            }
+        }
+
+        It 'does not let delayed shared connectivity history override endpoint status' {
+            $pc = [pscustomobject]@{
+                PSTypeName             = 'WindowsCloudPC.CloudPC'
+                Id                     = 'cpc-shared-1'
+                Name                   = 'CPC-SHARED-01'
+                ProvisioningType       = 'Shared'
+                ProvisioningPolicyName = 'Shared Policy'
+                ProvisioningStatus     = 'provisioned'
+                AssignedUserUpn        = 'brad@example.com'
+                ManagedDeviceId        = 'mdm-shared-1'
+                Raw                    = @{
+                    connectivityResult = @{ status = 'available' }
+                    sharedDeviceDetail = @{ sessionStartDateTime = (Get-Date).ToString('o') }
+                }
+            }
+
+            $result = $pc | Get-CloudPCUsage
+            $result.UsageStatus | Should -Be 'available'
+            $result.SignInStatus | Should -Be 'NotSignedIn'
+        }
+
+        It 'reports unknown status for shared PCs when endpoint connectivityResult is missing' {
+            $pc = [pscustomobject]@{
+                PSTypeName             = 'WindowsCloudPC.CloudPC'
+                Id                     = 'cpc-shared-1'
+                Name                   = 'CPC-SHARED-01'
+                ProvisioningType       = 'Shared'
+                ProvisioningPolicyName = 'Shared Policy'
+                ProvisioningStatus     = 'provisioned'
+                AssignedUserUpn        = 'brad@example.com'
+                ManagedDeviceId        = 'mdm-shared-1'
+                Raw                    = @{
+                    connectivityResult = $null
+                    sharedDeviceDetail = @{ sessionStartDateTime = (Get-Date).ToString('o') }
+                }
+            }
+
+            $result = $pc | Get-CloudPCUsage
+            $result.UsageStatus | Should -Be 'unknown'
+            $result.SignInStatus | Should -BeNullOrEmpty
+            $result.LastActiveTime | Should -BeOfType [datetime]
         }
 
         It 'resolves the assigned user display name' {
@@ -117,27 +171,66 @@ Describe 'Get-CloudPCUsage' {
                 }
             }
 
-            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-active' } -MockWith {
-                [pscustomobject]@{
-                    ManagedDeviceName   = 'CFD-ACTIVE'
-                    CloudPcId           = 'cpc-dedicated-active'
-                    DaysSinceLastSignIn = 0
-                    SignInStatus        = 'SignedIn'
-                    LastActiveTime      = (Get-Date)
-                    Raw                 = @{}
-                }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-active' } -MockWith {
+                @(
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-active'
+                        EventDateTime = (Get-Date).AddMinutes(-10)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Started'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                )
             }
-            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-idle' } -MockWith {
-                [pscustomobject]@{
-                    ManagedDeviceName   = 'CFD-IDLE'
-                    CloudPcId           = 'cpc-dedicated-idle'
-                    DaysSinceLastSignIn = 42
-                    SignInStatus        = 'NotSignedIn'
-                    LastActiveTime      = (Get-Date).AddDays(-42)
-                    Raw                 = @{}
-                }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-idle' } -MockWith {
+                @(
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-idle'
+                        EventDateTime = (Get-Date).AddDays(-41)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Finished'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-idle'
+                        EventDateTime = (Get-Date).AddDays(-42).AddHours(-1)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Started'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                )
             }
-            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-noreport' } -MockWith { $null }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-nohistory' } -MockWith {
+                @()
+            }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-dropped' } -MockWith {
+                @(
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-dropped'
+                        EventDateTime = (Get-Date).AddMinutes(-2)
+                        EventType     = 'userConnection'
+                        EventName     = 'MultipathTransportNetworkDrop'
+                        EventResult   = 'failure'
+                        Message       = 'Unknown connection error'
+                        Raw           = @{}
+                    }
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-dropped'
+                        EventDateTime = (Get-Date).AddMinutes(-5)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Started'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                )
+            }
 
             $script:DedicatedActive = [pscustomobject]@{
                 PSTypeName       = 'WindowsCloudPC.CloudPC'
@@ -159,28 +252,41 @@ Describe 'Get-CloudPCUsage' {
             }
             $script:DedicatedNoReport = [pscustomobject]@{
                 PSTypeName       = 'WindowsCloudPC.CloudPC'
-                Id               = 'cpc-dedicated-noreport'
-                Name             = 'CFD-NOREPORT'
+                Id               = 'cpc-dedicated-nohistory'
+                Name             = 'CFD-NOHISTORY'
                 ProvisioningType = 'Dedicated'
                 AssignedUserUpn  = 'alice@example.com'
                 ManagedDeviceId  = 'mdm-dedicated'
                 Raw              = @{ connectivityResult = @{ status = 'inUse' } }
             }
+            $script:DedicatedDropped = [pscustomobject]@{
+                PSTypeName       = 'WindowsCloudPC.CloudPC'
+                Id               = 'cpc-dedicated-dropped'
+                Name             = 'CFD-DROPPED'
+                ProvisioningType = 'Dedicated'
+                AssignedUserUpn  = 'alice@example.com'
+                ManagedDeviceId  = 'mdm-dedicated'
+                Raw              = @{ connectivityResult = @{ status = 'available' } }
+            }
         }
 
-        It 'reports inUse from the real-time report' {
+        It 'reports inUse from connectivity history' {
             ($DedicatedActive | Get-CloudPCUsage).UsageStatus | Should -Be 'inUse'
         }
 
-        It 'reports available from the real-time report' {
+        It 'reports available from connectivity history' {
             ($DedicatedIdle | Get-CloudPCUsage).UsageStatus | Should -Be 'available'
+        }
+
+        It 'reports available when the latest connection activity has a failure terminal event' {
+            ($DedicatedDropped | Get-CloudPCUsage).UsageStatus | Should -Be 'available'
         }
 
         It 'surfaces DaysSinceLastSignIn for finding idle PCs' {
             ($DedicatedIdle | Get-CloudPCUsage).DaysSinceLastSignIn | Should -Be 42
         }
 
-        It 'falls back to ConnectivityStatus when the real-time report is unavailable' {
+        It 'falls back to ConnectivityStatus when connectivity history is unavailable' {
             ($DedicatedNoReport | Get-CloudPCUsage).UsageStatus | Should -Be 'inUse'
         }
 
