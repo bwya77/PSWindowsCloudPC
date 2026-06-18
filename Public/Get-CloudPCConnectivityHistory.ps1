@@ -18,6 +18,9 @@ function Get-CloudPCConnectivityHistory {
     .PARAMETER CloudPcId
         One or more Cloud PC IDs.
 
+    .OUTPUTS
+        WindowsCloudPC.CloudPCConnectivityEvent
+
     .EXAMPLE
         Get-CloudPCConnectivityHistory -CloudPcId 'f55ba1ae-4d31-4b41-a19f-5ca6fd5d8ffe'
 
