@@ -46,6 +46,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. |
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
+| `Get-CloudPCConnectivityHistory` | Get Cloud PC connectivity history events from Graph beta by Cloud PC ID or from `Get-CloudPC` pipeline input. |
 | `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use connectivity history for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
@@ -82,6 +83,13 @@ Get-CloudPCUsage | Where-Object UsageStatus -eq 'inUse'
 
 # Idle Cloud PCs (no sign-in in 14+ days)
 Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14 | Sort-Object DaysSinceLastSignIn -Descending
+
+# Inspect raw connectivity history for a Cloud PC
+Get-CloudPC -Type Dedicated |
+    Select-Object -First 1 |
+    Get-CloudPCConnectivityHistory |
+    Sort-Object EventDateTime -Descending |
+    Format-Table CloudPcName,EventDateTime,EventType,EventName,EventResult
 
 # Per-policy breakdown
 Get-CloudPCByProvisioningPolicy | Format-Table DisplayName,ProvisioningType,CloudPCCount

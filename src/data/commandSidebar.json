@@ -3,6 +3,7 @@
   "commands/export-cloudpcprovisioningpolicy",
   "commands/get-cloudpc",
   "commands/get-cloudpcbyprovisioningpolicy",
+  "commands/get-cloudpcconnectivityhistory",
   "commands/get-cloudpclaunchdetail",
   "commands/get-cloudpclicensingallotment",
   "commands/get-cloudpcmaintenancewindow",

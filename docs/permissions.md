@@ -31,7 +31,7 @@ These cover Cloud PC inventory, assigned users, provisioning policies, groups, r
 | --- | --- | --- |
 | Connect | `Connect-CloudPC` | Read scopes listed above |
 | Inventory | `Get-CloudPC`, `Get-CloudPCByProvisioningPolicy`, `Get-CloudPCProvisioningPolicy`, `Get-CloudPCSupportedRegion`, `Get-CloudPCSettingProfile`, `Get-CloudPCUserSetting` | `CloudPC.Read.All`, plus user and group read scopes |
-| Usage and actions | `Get-CloudPCUsage`, `Get-CloudPCLaunchDetail`, `Get-CloudPCRemoteActionResult` | `CloudPC.Read.All`, `DeviceManagementManagedDevices.Read.All` |
+| Usage and actions | `Get-CloudPCUsage`, `Get-CloudPCConnectivityHistory`, `Get-CloudPCLaunchDetail`, `Get-CloudPCRemoteActionResult` | `CloudPC.Read.All`, `DeviceManagementManagedDevices.Read.All` |
 | Snapshots | `Get-CloudPCSnapshot`, `New-CloudPCSnapshot` | Read for viewing, `CloudPC.ReadWrite.All` for creating |
 | Power and provisioning actions | `Start-CloudPC`, `Restart-CloudPC`, `Invoke-CloudPCReprovision`, `Invoke-CloudPCPolicyReprovision` | `CloudPC.ReadWrite.All` |
 | Managed device actions | `Sync-CloudPC`, `Reset-CloudPCLocalAdminPassword` | `DeviceManagementManagedDevices.PrivilegedOperations.All` |

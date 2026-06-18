@@ -15,6 +15,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Export-CloudPCProvisioningPolicy](/docs/commands/export-cloudpcprovisioningpolicy) | Exports a Windows 365 Cloud PC provisioning policy as reusable JSON. | Read |
 | [Get-CloudPC](/docs/commands/get-cloudpc) | Returns Windows 365 Cloud PCs in the tenant. | Read |
 | [Get-CloudPCByProvisioningPolicy](/docs/commands/get-cloudpcbyprovisioningpolicy) | Groups Cloud PCs under their provisioning policies and returns one row per policy. | Read |
+| [Get-CloudPCConnectivityHistory](/docs/commands/get-cloudpcconnectivityhistory) | Gets connectivity history for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCLaunchDetail](/docs/commands/get-cloudpclaunchdetail) | Gets launch details for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCLicensingAllotment](/docs/commands/get-cloudpclicensingallotment) | Returns Microsoft Graph cloud licensing allotments. | Read |
 | [Get-CloudPCMaintenanceWindow](/docs/commands/get-cloudpcmaintenancewindow) | Returns Windows 365 Cloud PC maintenance windows. | Read |

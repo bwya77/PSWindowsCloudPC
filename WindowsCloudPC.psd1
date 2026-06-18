@@ -15,6 +15,7 @@
         'Export-CloudPCProvisioningPolicy',
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
+        'Get-CloudPCConnectivityHistory',
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCLicensingAllotment',
         'Get-CloudPCMaintenanceWindow',
