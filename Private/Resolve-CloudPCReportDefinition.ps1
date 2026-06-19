@@ -28,6 +28,7 @@ function Resolve-CloudPCReportDefinition {
             'cloudPcInsightReport' { @{ Action = 'retrieveCloudPcTenantMetricsReport'; IncludeReportName = $true; GraphReportName = $ReportName } }
             'regionalInaccessibleCloudPcTrendReport' { @{ Action = 'getInaccessibleCloudPcReports'; IncludeReportName = $true; GraphReportName = $ReportName } }
             'cloudPcUsageCategoryReport' { @{ Action = 'retrieveCloudPcRecommendationReports'; IncludeReportName = $true; GraphReportName = $ReportName } }
+            'realTimeRemoteConnectionStatus' { @{ Action = 'getRealTimeRemoteConnectionStatus'; IncludeReportName = $false; GraphReportName = $ReportName; Method = 'GET'; SupportsAllCloudPcs = $true } }
         }
 
         if (-not $definition) {

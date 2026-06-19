@@ -1,0 +1,1 @@
+{"TotalRowCount":0,"Schema":[{"Column":"UPN","PropertyType":"String"},{"Column":"UserId","PropertyType":"String"},{"Column":"CloudPCId","PropertyType":"String"},{"Column":"CloudPCSizeId","PropertyType":"String"},{"Column":"Name","PropertyType":"String"},{"Column":"ConcurrentAccessGroupId","PropertyType":"String"},{"Column":"DateTimeUTC","PropertyType":"DateTime"}],"Values":[]}

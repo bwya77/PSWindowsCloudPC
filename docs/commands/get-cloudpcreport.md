@@ -21,12 +21,15 @@ The ReportName parameter accepts only cloudPcReportName enum members
 that were verified to return report streams in a live tenant. Deprecated
 reports, tenant-state-dependent reports that returned Graph 400s, and
 enum values without a callable Graph action are intentionally excluded.
+realTimeRemoteConnectionStatus is also supported because it uses the
+same Graph report stream payload shape, but is exposed as a GET function
+scoped to a Cloud PC ID instead of a POST report action.
 
 ## Syntax
 
 ```powershell
 
-Get-CloudPCReport [-ReportName] <string> [-CloudPcId <string>] [-ActivityId <string>] [-Select <string[]>] [-Filter <string>] [-Search <string>] [-GroupBy <string[]>] [-OrderBy <string[]>] [-Skip <int>] [-Top <int>] [-OutputFilePath <string>] [-Raw] [<CommonParameters>]
+Get-CloudPCReport [-ReportName] <string> [-CloudPcId <string>] [-ActivityId <string>] [-Select <string[]>] [-Filter <string>] [-Search <string>] [-GroupBy <string[]>] [-OrderBy <string[]>] [-Skip <int>] [-Top <int>] [-OutputFilePath <string>] [-MaxRetryCount <int>] [-InitialRetryDelaySeconds <int>] [-MaxRetryDelaySeconds <int>] [-RequestDelayMilliseconds <int>] [-Raw] [<CommonParameters>]
 
 ```
 
@@ -35,13 +38,17 @@ Get-CloudPCReport [-ReportName] <string> [-CloudPcId <string>] [-ActivityId <str
 | Name | Type | Required | Aliases | Description |
 | --- | --- | --- | --- | --- |
 | `ActivityId` | `String` | No |  | Optional remote connection activity ID used to build the required<br />ActivityId filter for rawRemoteConnectionReports. If Filter is also<br />provided, the ActivityId clause is combined with it. |
-| `CloudPcId` | `String` | No |  | Optional Cloud PC ID used to build the required CloudPcId filter for<br />reports that are scoped to one Cloud PC, such as<br />remoteConnectionHistoricalReports. If Filter is also provided, the<br />CloudPcId clause is combined with it. |
+| `CloudPcId` | `String` | No |  | Optional Cloud PC ID used to build the required CloudPcId filter for<br />reports that are scoped to one Cloud PC, such as<br />remoteConnectionHistoricalReports. If Filter is also provided, the<br />CloudPcId clause is combined with it. For realTimeRemoteConnectionStatus,<br />this calls the report for a single Cloud PC. When omitted, the cmdlet<br />retrieves all Cloud PCs and calls the report once for each Cloud PC. |
 | `Filter` | `String` | No |  | Optional OData filter expression for the report action. |
 | `GroupBy` | `String[]` | No |  | Optional report columns to group by. For Graph report actions that<br />support groupBy, this usually must match Select. |
+| `InitialRetryDelaySeconds` | `Int32` | No |  | First retry delay used when Graph does not return a Retry-After header. |
+| `MaxRetryCount` | `Int32` | No |  | Maximum number of retries for Graph 429, 503, and 504 responses. The<br />retry delay honors Graph Retry-After when present and otherwise uses<br />exponential backoff. |
+| `MaxRetryDelaySeconds` | `Int32` | No |  | Maximum retry delay used when Graph does not return a Retry-After header. |
 | `OrderBy` | `String[]` | No |  | Optional report columns or expressions to sort by. |
 | `OutputFilePath` | `String` | No |  | Optional path where the raw Graph report file should be saved. When not<br />provided, a temporary file is used and removed after parsing. |
 | `Raw` | `SwitchParameter` | No |  | Return a WindowsCloudPC.ReportPayload object containing the parsed file,<br />schema, values, action name, and output file path instead of row objects. |
 | `ReportName` | `String` | Yes |  | The Microsoft Graph beta cloudPcReportName enum member to retrieve. |
+| `RequestDelayMilliseconds` | `Int32` | No |  | Optional delay between per-Cloud-PC calls for<br />realTimeRemoteConnectionStatus. Use this to proactively pace large<br />tenants instead of relying only on Graph throttling responses. |
 | `Search` | `String` | No |  | Optional search string for the report action. |
 | `Select` | `String[]` | No | `Property` | Optional report columns to request. Graph returns only selected columns<br />when the target report action supports select.<br />For rawRemoteConnectionReports, the Graph stream uses Timestamp and<br />AvailableBandwidthInMBps column names. Common aliases SignInDateTime and<br />AvailableBandwidthInMbps are normalized automatically. |
 | `Skip` | `Int32` | No |  | Optional number of rows to skip. |
@@ -67,6 +74,7 @@ Raw               : {[TotalRowCount, 10], [Schema, System.Object[]], [Values, Sy
 ## Graph endpoints
 
 ```text
+/beta/deviceManagement/virtualEndpoint/reports/getRealTimeRemoteConnectionStatus(cloudPcId='{id}')
 /beta/deviceManagement/virtualEndpoint/reports/$($definition.Action)
 ```
 
@@ -89,11 +97,18 @@ Sort-Object Timestamp -Descending
 ## Example 3
 
 ```powershell
+Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus |
+Format-Table ManagedDeviceName,SignInStatus,DaysSinceLastSignIn,LastActiveTime
+```
+
+## Example 4
+
+```powershell
 Get-CloudPCReport -ReportName frontlineLicenseUsageReport -Top 100 |
 Format-Table Timestamp,DisplayName,LicenseCount,ClaimedLicenseCount
 ```
 
-## Example 4
+## Example 5
 
 ```powershell
 Get-CloudPCReport -ReportName regionalConnectionQualityTrendReport -Top 50 |

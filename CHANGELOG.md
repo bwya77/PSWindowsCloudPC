@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus` now calls the
+  Graph beta `getRealTimeRemoteConnectionStatus` report function for one Cloud
+  PC by ID, or for all Cloud PCs when `-CloudPcId` is omitted.
+- `Get-CloudPCReport` now retries Graph 429, 503, and 504 responses, honors
+  `Retry-After` when provided, and supports `-RequestDelayMilliseconds` to pace
+  tenant-wide real-time status queries.
+### Changed
+- `Get-CloudPCUsage` now uses `getRealTimeRemoteConnectionStatus` as the
+  current sign-in source of truth for dedicated Cloud PCs before falling back to
+  connectivity history.
+- `Get-CloudPCUsage -CloudPC` now accepts Cloud PC objects, exact Cloud PC IDs,
+  or exact Cloud PC names.
 
 ## [0.1.20] - 2026-06-19
 ### Added

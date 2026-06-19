@@ -118,6 +118,136 @@ Describe 'Get-CloudPCReport' {
         }
     }
 
+    It 'calls real-time remote connection status with GET for a single Cloud PC' {
+        Mock -ModuleName WindowsCloudPC Invoke-MgGraphRequest -MockWith {
+            $payload = @{
+                TotalRowCount = 1
+                Schema = @(
+                    @{ Column = 'ManagedDeviceName'; PropertyType = 'String' }
+                    @{ Column = 'CloudPcId'; PropertyType = 'String' }
+                    @{ Column = 'DaysSinceLastSignIn'; PropertyType = 'Int64' }
+                    @{ Column = 'SignInStatus'; PropertyType = 'String' }
+                    @{ Column = 'LastActiveTime'; PropertyType = 'DateTime' }
+                )
+                Values = @(
+                    @('CPC-1', 'cpc-1', 0, 'SignedIn', '2026-06-19T05:20:28')
+                )
+            } | ConvertTo-Json -Depth 8
+
+            Set-Content -LiteralPath $OutputFilePath -Value $payload -Encoding utf8NoBOM
+        }
+
+        $rows = Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus -CloudPcId 'cpc-1'
+
+        $rows | Should -HaveCount 1
+        $rows[0].ReportName | Should -Be 'realTimeRemoteConnectionStatus'
+        $rows[0].Action | Should -Be 'getRealTimeRemoteConnectionStatus'
+        $rows[0].CloudPcId | Should -Be 'cpc-1'
+        $rows[0].SignInStatus | Should -Be 'SignedIn'
+        $rows[0].DaysSinceLastSignIn | Should -BeOfType [long]
+        $rows[0].LastActiveTime | Should -BeOfType [datetime]
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 1 -Exactly -ParameterFilter {
+            $Method -eq 'GET' -and
+            $Uri -eq "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/reports/getRealTimeRemoteConnectionStatus(cloudPcId='cpc-1')" -and
+            -not $PSBoundParameters.ContainsKey('Body')
+        }
+    }
+
+    It 'retries real-time remote connection status when Graph throttles' {
+        $script:ThrottleAttemptCount = 0
+        Mock -ModuleName WindowsCloudPC Start-Sleep { }
+        Mock -ModuleName WindowsCloudPC Invoke-MgGraphRequest -MockWith {
+            $script:ThrottleAttemptCount++
+            if ($script:ThrottleAttemptCount -eq 1) {
+                throw 'Response status code does not indicate success: 429 (Too Many Requests). Retry-After: 1'
+            }
+
+            $payload = @{
+                TotalRowCount = 1
+                Schema = @(
+                    @{ Column = 'ManagedDeviceName'; PropertyType = 'String' }
+                    @{ Column = 'CloudPcId'; PropertyType = 'String' }
+                    @{ Column = 'DaysSinceLastSignIn'; PropertyType = 'Int64' }
+                    @{ Column = 'SignInStatus'; PropertyType = 'String' }
+                    @{ Column = 'LastActiveTime'; PropertyType = 'DateTime' }
+                )
+                Values = @(
+                    @('CPC-1', 'cpc-1', 0, 'SignedIn', '2026-06-19T05:20:28')
+                )
+            } | ConvertTo-Json -Depth 8
+
+            Set-Content -LiteralPath $OutputFilePath -Value $payload -Encoding utf8NoBOM
+        }
+
+        $rows = Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus -CloudPcId 'cpc-1' -MaxRetryCount 1
+
+        $rows | Should -HaveCount 1
+        $script:ThrottleAttemptCount | Should -Be 2
+        Should -Invoke -ModuleName WindowsCloudPC Start-Sleep -Times 1 -Exactly -ParameterFilter {
+            $Seconds -eq 1
+        }
+    }
+
+    It 'enumerates all Cloud PCs for real-time remote connection status when CloudPcId is omitted' {
+        Mock -ModuleName WindowsCloudPC Get-CloudPC -MockWith {
+            @(
+                [pscustomobject]@{ PSTypeName = 'WindowsCloudPC.CloudPC'; Id = 'cpc-1'; Name = 'CPC-1' }
+                [pscustomobject]@{ PSTypeName = 'WindowsCloudPC.CloudPC'; Id = 'cpc-never-used'; Name = 'CPC-NEVER-USED' }
+            )
+        }
+        Mock -ModuleName WindowsCloudPC Invoke-MgGraphRequest -MockWith {
+            $cloudPcId = if ($Uri -match "cloudPcId='([^']+)'") { $Matches[1] } else { 'unknown' }
+            $payload = if ($cloudPcId -eq 'cpc-never-used') {
+                @{
+                    TotalRowCount = 0
+                    Schema = @(
+                        @{ Column = 'ManagedDeviceName'; PropertyType = 'String' }
+                        @{ Column = 'CloudPcId'; PropertyType = 'String' }
+                        @{ Column = 'DaysSinceLastSignIn'; PropertyType = 'Int64' }
+                        @{ Column = 'SignInStatus'; PropertyType = 'String' }
+                        @{ Column = 'LastActiveTime'; PropertyType = 'DateTime' }
+                    )
+                    Values = @()
+                }
+            }
+            else {
+                @{
+                    TotalRowCount = 1
+                    Schema = @(
+                        @{ Column = 'ManagedDeviceName'; PropertyType = 'String' }
+                        @{ Column = 'CloudPcId'; PropertyType = 'String' }
+                        @{ Column = 'DaysSinceLastSignIn'; PropertyType = 'Int64' }
+                        @{ Column = 'SignInStatus'; PropertyType = 'String' }
+                        @{ Column = 'LastActiveTime'; PropertyType = 'DateTime' }
+                    )
+                    Values = @(
+                        @('CPC-1', 'cpc-1', 0, 'NotSignedIn', '2026-06-19T05:20:28')
+                    )
+                }
+            }
+
+            Set-Content -LiteralPath $OutputFilePath -Value ($payload | ConvertTo-Json -Depth 8) -Encoding utf8NoBOM
+        }
+
+        $rows = Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus
+
+        $rows | Should -HaveCount 2
+        ($rows | Where-Object CloudPcId -eq 'cpc-never-used').ManagedDeviceName | Should -Be 'CPC-NEVER-USED'
+        ($rows | Where-Object CloudPcId -eq 'cpc-never-used').SignInStatus | Should -Be 'NotSignedIn'
+
+        Should -Invoke -ModuleName WindowsCloudPC Get-CloudPC -Times 1 -Exactly
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 2 -Exactly -ParameterFilter {
+            $Method -eq 'GET' -and
+            $Uri -like "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/reports/getRealTimeRemoteConnectionStatus*"
+        }
+    }
+
+    It 'rejects body-style report parameters for real-time remote connection status' {
+        { Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus -Filter "CloudPcId eq 'cpc-1'" } |
+            Should -Throw -ExpectedMessage '*does not support*Filter*'
+    }
+
     It 'rejects deprecated, unsupported, and live-failing report names at binding time' -ForEach @(
         'remoteConnectionQualityReports',
         'cloudPcUsageCategoryReports',

@@ -13,9 +13,10 @@ Reports who is signed in to each Cloud PC and whether it is in use or available.
 Uses the Cloud PC endpoint's connectivityResult.status for shared Cloud
 PCs because that signal updates almost immediately for shared devices.
 It still reads getCloudPcConnectivityHistory for last sign-in timestamps.
-Dedicated Cloud PCs use the beta getCloudPcConnectivityHistory endpoint
-to infer whether the most recent user connection event is an active
-connection. The result is enriched with the current user from the
+Dedicated Cloud PCs use the beta getRealTimeRemoteConnectionStatus report
+endpoint for current sign-in status, then fall back to
+getCloudPcConnectivityHistory when the real-time report is unavailable.
+The result is enriched with the current user from the
 matching Intune managedDevice (dedicated) or sharedDeviceDetail (shared).
 
 UsageStatus values:
@@ -29,7 +30,9 @@ new PC whose first telemetry hasn't landed yet)
 Source of truth by provisioning type:
 Shared      cloudPC.connectivityResult.status from the Cloud PC endpoint.
 Connectivity history enriches LastActiveTime only.
-Dedicated   getCloudPcConnectivityHistory, then cloudPC.connectivityResult.status.
+Dedicated   getRealTimeRemoteConnectionStatus, then
+getCloudPcConnectivityHistory, then
+cloudPC.connectivityResult.status.
 
 CurrentUser* fields are populated independently of UsageStatus:
 Shared      From sharedDeviceDetail.assignedToUserPrincipalName.
@@ -40,7 +43,7 @@ back to userPrincipalName / userDisplayName on the device.
 
 ```powershell
 
-Get-CloudPCUsage [[-CloudPC] <CloudPC[]>] [[-ProvisioningPolicyId] <string>] [[-Type] <string>] [<CommonParameters>]
+Get-CloudPCUsage [[-CloudPC] <Object[]>] [[-ProvisioningPolicyId] <string>] [[-Type] <string>] [<CommonParameters>]
 
 ```
 
@@ -48,7 +51,7 @@ Get-CloudPCUsage [[-CloudPC] <CloudPC[]>] [[-ProvisioningPolicyId] <string>] [[-
 
 | Name | Type | Required | Aliases | Description |
 | --- | --- | --- | --- | --- |
-| `CloudPC` | `PSObject[]` | No |  | Pipe in WindowsCloudPC.CloudPC objects from Get-CloudPC. Anything else fails<br />parameter binding (so a typo like Get-CloudPCUsage -CloudPC 'test' errors loudly<br />instead of returning blank rows). |
+| `CloudPC` | `Object[]` | No |  | Pipe in WindowsCloudPC.CloudPC objects from Get-CloudPC, or pass one or<br />more Cloud PC IDs or names. String values are resolved against Get-CloudPC<br />using exact matches on Id, Name, managedDeviceName, or displayName. |
 | `ProvisioningPolicyId` | `String` | No |  | Limit the report to a single provisioning policy. |
 | `Type` | `String` | No |  | Shared, Dedicated, or All (default). |
 
@@ -101,6 +104,13 @@ Get-CloudPCUsage -Type Dedicated | Where-Object DaysSinceLastSignIn -ge 30
 ```powershell
 # Pre-filter then enrich
 Get-CloudPC -Type Dedicated | Get-CloudPCUsage
+```
+
+## Example 5
+
+```powershell
+# Resolve one Cloud PC by ID or name
+Get-CloudPCUsage -CloudPC '<cloud-pc-id-or-name>'
 ```
 
 

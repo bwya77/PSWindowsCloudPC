@@ -15,6 +15,9 @@ function Get-CloudPCReport {
         that were verified to return report streams in a live tenant. Deprecated
         reports, tenant-state-dependent reports that returned Graph 400s, and
         enum values without a callable Graph action are intentionally excluded.
+        realTimeRemoteConnectionStatus is also supported because it uses the
+        same Graph report stream payload shape, but is exposed as a GET function
+        scoped to a Cloud PC ID instead of a POST report action.
 
     .PARAMETER ReportName
         The Microsoft Graph beta cloudPcReportName enum member to retrieve.
@@ -23,7 +26,9 @@ function Get-CloudPCReport {
         Optional Cloud PC ID used to build the required CloudPcId filter for
         reports that are scoped to one Cloud PC, such as
         remoteConnectionHistoricalReports. If Filter is also provided, the
-        CloudPcId clause is combined with it.
+        CloudPcId clause is combined with it. For realTimeRemoteConnectionStatus,
+        this calls the report for a single Cloud PC. When omitted, the cmdlet
+        retrieves all Cloud PCs and calls the report once for each Cloud PC.
 
     .PARAMETER ActivityId
         Optional remote connection activity ID used to build the required
@@ -60,6 +65,22 @@ function Get-CloudPCReport {
         Optional path where the raw Graph report file should be saved. When not
         provided, a temporary file is used and removed after parsing.
 
+    .PARAMETER MaxRetryCount
+        Maximum number of retries for Graph 429, 503, and 504 responses. The
+        retry delay honors Graph Retry-After when present and otherwise uses
+        exponential backoff.
+
+    .PARAMETER InitialRetryDelaySeconds
+        First retry delay used when Graph does not return a Retry-After header.
+
+    .PARAMETER MaxRetryDelaySeconds
+        Maximum retry delay used when Graph does not return a Retry-After header.
+
+    .PARAMETER RequestDelayMilliseconds
+        Optional delay between per-Cloud-PC calls for
+        realTimeRemoteConnectionStatus. Use this to proactively pace large
+        tenants instead of relying only on Graph throttling responses.
+
     .PARAMETER Raw
         Return a WindowsCloudPC.ReportPayload object containing the parsed file,
         schema, values, action name, and output file path instead of row objects.
@@ -73,6 +94,10 @@ function Get-CloudPCReport {
         $activity = Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId '<cloud-pc-id>' -Top 1
         Get-CloudPCReport -ReportName rawRemoteConnectionReports -ActivityId $activity.ActivityId -Select SignInDateTime,RoundTripTimeInMs,AvailableBandwidthInMbps |
             Sort-Object Timestamp -Descending
+
+    .EXAMPLE
+        Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus |
+            Format-Table ManagedDeviceName,SignInStatus,DaysSinceLastSignIn,LastActiveTime
 
     .EXAMPLE
         Get-CloudPCReport -ReportName frontlineLicenseUsageReport -Top 100 |
@@ -105,7 +130,8 @@ function Get-CloudPCReport {
             'bulkActionStatusReport',
             'cloudPcInsightReport',
             'regionalInaccessibleCloudPcTrendReport',
-            'cloudPcUsageCategoryReport'
+            'cloudPcUsageCategoryReport',
+            'realTimeRemoteConnectionStatus'
         )]
         [string]$ReportName,
 
@@ -132,6 +158,18 @@ function Get-CloudPCReport {
 
         [string]$OutputFilePath,
 
+        [ValidateRange(0, 10)]
+        [int]$MaxRetryCount = 6,
+
+        [ValidateRange(1, 3600)]
+        [int]$InitialRetryDelaySeconds = 3,
+
+        [ValidateRange(1, 3600)]
+        [int]$MaxRetryDelaySeconds = 120,
+
+        [ValidateRange(0, 60000)]
+        [int]$RequestDelayMilliseconds = 0,
+
         [switch]$Raw
     )
 
@@ -143,6 +181,121 @@ function Get-CloudPCReport {
         $definition = Resolve-CloudPCReportDefinition -ReportName $ReportName
         if ($definition.UnsupportedReason) {
             throw $definition.UnsupportedReason
+        }
+
+        if ($definition.Action -eq 'getRealTimeRemoteConnectionStatus') {
+            $unsupportedParameters = @(
+                'ActivityId',
+                'Select',
+                'Filter',
+                'Search',
+                'GroupBy',
+                'OrderBy',
+                'Skip',
+                'Top'
+            ) | Where-Object { $PSBoundParameters.ContainsKey($_) }
+
+            if ($unsupportedParameters) {
+                throw "realTimeRemoteConnectionStatus does not support the following parameters: $($unsupportedParameters -join ', '). Use -CloudPcId to scope to one Cloud PC, or omit it to query all Cloud PCs."
+            }
+
+            if ($OutputFilePath -and -not $CloudPcId) {
+                throw "realTimeRemoteConnectionStatus supports -OutputFilePath only when -CloudPcId is specified. Omit -OutputFilePath when querying all Cloud PCs."
+            }
+
+            $targets = if ($CloudPcId) {
+                @([pscustomobject]@{ Id = $CloudPcId; Name = $null })
+            }
+            else {
+                @(Get-CloudPC | ForEach-Object {
+                    [pscustomobject]@{ Id = $_.Id; Name = $_.Name }
+                })
+            }
+
+            foreach ($target in $targets) {
+                if ([string]::IsNullOrWhiteSpace($target.Id)) {
+                    continue
+                }
+
+                $escapedCloudPcId = [uri]::EscapeDataString($target.Id)
+                $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/reports/getRealTimeRemoteConnectionStatus(cloudPcId='$escapedCloudPcId')"
+                $removeOutputFile = -not $OutputFilePath
+                if ($OutputFilePath) {
+                    $reportPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputFilePath)
+                }
+                else {
+                    $reportPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "windowscloudpc-report-$ReportName-$($target.Id)-$([guid]::NewGuid().ToString('N')).json")
+                }
+
+                try {
+                    $parentPath = Split-Path -Path $reportPath -Parent
+                    if ($parentPath -and -not (Test-Path -LiteralPath $parentPath)) {
+                        New-Item -ItemType Directory -Path $parentPath -Force | Out-Null
+                    }
+
+                    Invoke-CloudPCGraphRequestWithRetry `
+                        -Method GET `
+                        -Uri $uri `
+                        -Headers @{ Prefer = 'include-unknown-enum-members' } `
+                        -OutputFilePath $reportPath `
+                        -MaxRetryCount $MaxRetryCount `
+                        -InitialRetryDelaySeconds $InitialRetryDelaySeconds `
+                        -MaxRetryDelaySeconds $MaxRetryDelaySeconds `
+                        -ErrorAction Stop |
+                        Out-Null
+
+                    if (-not (Test-Path -LiteralPath $reportPath)) {
+                        throw "Graph did not write the expected report file: $reportPath"
+                    }
+
+                    $content = Get-Content -LiteralPath $reportPath -Raw -ErrorAction Stop
+                    if ([string]::IsNullOrWhiteSpace($content)) {
+                        throw "Graph returned an empty report file: $reportPath"
+                    }
+
+                    $payload = $content | ConvertFrom-Json -AsHashtable -ErrorAction Stop
+                    if (-not $payload.Schema) {
+                        $payload['Schema'] = @(
+                            @{ Column = 'ManagedDeviceName'; PropertyType = 'String' }
+                            @{ Column = 'CloudPcId'; PropertyType = 'String' }
+                            @{ Column = 'DaysSinceLastSignIn'; PropertyType = 'Int64' }
+                            @{ Column = 'SignInStatus'; PropertyType = 'String' }
+                            @{ Column = 'LastActiveTime'; PropertyType = 'DateTime' }
+                        )
+                    }
+                    if (-not $payload.Values -or @($payload.Values).Count -eq 0) {
+                        $payload['TotalRowCount'] = 1
+                        $payload['Values'] = @(, @($target.Name, $target.Id, $null, 'NotSignedIn', $null))
+                    }
+
+                    if ($Raw) {
+                        [pscustomobject]@{
+                            PSTypeName     = 'WindowsCloudPC.ReportPayload'
+                            ReportName     = $ReportName
+                            Action         = $definition.Action
+                            TotalRowCount  = $payload.TotalRowCount
+                            Schema         = $payload.Schema
+                            Values         = $payload.Values
+                            OutputFilePath = $reportPath
+                            Raw            = $payload
+                        }
+                    }
+                    else {
+                        $payload | ConvertFrom-CloudPCReportPayload -ReportName $ReportName -Action $definition.Action -OutputFilePath $reportPath
+                    }
+                }
+                finally {
+                    if ($removeOutputFile -and (Test-Path -LiteralPath $reportPath)) {
+                        Remove-Item -LiteralPath $reportPath -Force -ErrorAction SilentlyContinue
+                    }
+                }
+
+                if ($RequestDelayMilliseconds -gt 0) {
+                    Start-Sleep -Milliseconds $RequestDelayMilliseconds
+                }
+            }
+
+            return
         }
 
         $body = [ordered]@{}
@@ -236,13 +389,16 @@ function Get-CloudPCReport {
             }
 
             $jsonBody = $body | ConvertTo-Json -Depth 8
-            Invoke-MgGraphRequest `
+            Invoke-CloudPCGraphRequestWithRetry `
                 -Method POST `
                 -Uri $uri `
                 -Body $jsonBody `
                 -ContentType 'application/json' `
                 -Headers @{ Prefer = 'include-unknown-enum-members' } `
                 -OutputFilePath $reportPath `
+                -MaxRetryCount $MaxRetryCount `
+                -InitialRetryDelaySeconds $InitialRetryDelaySeconds `
+                -MaxRetryDelaySeconds $MaxRetryDelaySeconds `
                 -ErrorAction Stop |
                 Out-Null
 

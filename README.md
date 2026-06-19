@@ -47,7 +47,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
 | `Get-CloudPCConnectivityHistory` | Get Cloud PC connectivity history events from Graph beta by Cloud PC ID or from `Get-CloudPC` pipeline input. |
-| `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use connectivity history for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
+| `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use the real-time remote connection status report for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
@@ -81,6 +81,9 @@ Get-CloudPCUsage | Format-Table CloudPcName,ProvisioningType,UsageStatus,SignInS
 
 # Only Cloud PCs with an active session
 Get-CloudPCUsage | Where-Object UsageStatus -eq 'inUse'
+
+# One Cloud PC by exact ID or name
+Get-CloudPCUsage -CloudPC 'CPC-brad-U2O0S'
 
 # Idle Cloud PCs (no sign-in in 14+ days)
 Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14 | Sort-Object DaysSinceLastSignIn -Descending
@@ -148,6 +151,13 @@ Get-CloudPCLicensingAllotment |
 $pc = Get-CloudPC | Select-Object -First 1
 Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 50 |
     Format-Table ManagedDeviceName,SignInDateTime,SignOutDateTime,UsageInHour
+
+# Get real-time sign-in status for all Cloud PCs
+Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus |
+    Format-Table ManagedDeviceName,SignInStatus,DaysSinceLastSignIn,LastActiveTime
+
+# Pace tenant-wide real-time status checks in large environments
+Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus -RequestDelayMilliseconds 100
 
 # Save the raw report file while still returning parsed report rows
 $activity = Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 1
@@ -261,10 +271,12 @@ that history can lag, but they do use connectivity history to populate
 values such as `inUse` and `underServiceMaintenance`.
 
 For dedicated Cloud PCs, `Get-CloudPCUsage` uses Graph beta
-`getCloudPcConnectivityHistory`. The latest successful `Connection Started`
+`getRealTimeRemoteConnectionStatus` as the current sign-in source of truth. If
+that real-time report is unavailable, the function falls back to
+`getCloudPcConnectivityHistory`: the latest successful `Connection Started`
 event with no newer user-connection terminal event maps to `inUse`; otherwise
-the PC maps to `available`. If connectivity history is unavailable, the function
-falls back to `connectivityResult.status`.
+the PC maps to `available`. If connectivity history is also unavailable, the
+function falls back to `connectivityResult.status`.
 
 ## Releases
 

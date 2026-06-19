@@ -143,6 +143,19 @@ Get-CloudPCReport -ReportName regionalConnectionQualityTrendReport -Top 50 |
     Format-Table GatewayRegionName,WeeklyAvgRoundTripTimeInMs,WeeklyAvgAvailableBandwidthInMbps
 ```
 
+`realTimeRemoteConnectionStatus` uses the Graph report stream payload shape, but it is a GET function scoped to a Cloud PC ID. Omit `-CloudPcId` to query every Cloud PC in the tenant.
+
+```powershell
+Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus |
+    Format-Table ManagedDeviceName,SignInStatus,DaysSinceLastSignIn,LastActiveTime
+```
+
+For large tenants, the cmdlet honors Graph `Retry-After` responses for 429 throttling and retries transient 503/504 responses. You can also add a small delay between per-Cloud-PC calls to proactively pace the tenant-wide loop.
+
+```powershell
+Get-CloudPCReport -ReportName realTimeRemoteConnectionStatus -RequestDelayMilliseconds 100
+```
+
 Use `-OutputFilePath` to keep the raw Graph report file for audit or troubleshooting, or `-Raw` to inspect the parsed payload and schema directly.
 
 Some Graph reports require scoped filters. Use `-CloudPcId` for `remoteConnectionHistoricalReports`, and use an `ActivityId` from that history when drilling into `rawRemoteConnectionReports`.

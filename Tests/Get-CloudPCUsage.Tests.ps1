@@ -36,13 +36,50 @@ Describe 'Get-CloudPCUsage' {
     }
 
     Context 'Parameter binding' {
-        It 'rejects a plain string passed to -CloudPC' {
-            { Get-CloudPCUsage -CloudPC 'test' } | Should -Throw -ExpectedMessage '*WindowsCloudPC.CloudPC*'
+        BeforeEach {
+            Mock -ModuleName WindowsCloudPC Get-CloudPC -MockWith {
+                @(
+                    [pscustomobject]@{
+                        PSTypeName             = 'WindowsCloudPC.CloudPC'
+                        Id                     = 'cpc-1'
+                        Name                   = 'CPC-1'
+                        ProvisioningType       = 'Shared'
+                        ProvisioningPolicyName = 'Shared Policy'
+                        ProvisioningStatus     = 'provisioned'
+                        AssignedUserUpn        = 'brad@example.com'
+                        ManagedDeviceId        = 'mdm-shared-1'
+                        Raw                    = @{
+                            displayName        = 'Cloud PC One'
+                            managedDeviceName  = 'CPC-1'
+                            connectivityResult = @{ status = 'available' }
+                            sharedDeviceDetail = @{}
+                        }
+                    }
+                )
+            }
+        }
+
+        It 'resolves a Cloud PC ID passed to -CloudPC' {
+            $result = Get-CloudPCUsage -CloudPC 'cpc-1'
+
+            $result.CloudPcId | Should -Be 'cpc-1'
+            $result.CloudPcName | Should -Be 'CPC-1'
+        }
+
+        It 'resolves a Cloud PC name passed to -CloudPC' {
+            $result = Get-CloudPCUsage -CloudPC 'CPC-1'
+
+            $result.CloudPcId | Should -Be 'cpc-1'
         }
 
         It 'rejects an arbitrary hashtable passed to -CloudPC' {
             { Get-CloudPCUsage -CloudPC ([pscustomobject]@{ Id = 'x' }) } |
-                Should -Throw -ExpectedMessage '*WindowsCloudPC.CloudPC*'
+                Should -Throw -ExpectedMessage '*CloudPC must be a WindowsCloudPC.CloudPC object*'
+        }
+
+        It 'rejects an unresolved Cloud PC ID or name' {
+            { Get-CloudPCUsage -CloudPC 'missing-cpc' } |
+                Should -Throw -ExpectedMessage "*Could not find a Cloud PC matching 'missing-cpc'*"
         }
 
         It 'accepts a typed WindowsCloudPC.CloudPC object' {
@@ -161,6 +198,8 @@ Describe 'Get-CloudPCUsage' {
 
     Context 'Dedicated Cloud PC' {
         BeforeAll {
+            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -MockWith { $null }
+
             Mock -ModuleName WindowsCloudPC Get-CloudPCManagedDevice -ParameterFilter { $ManagedDeviceId -eq 'mdm-dedicated' } -MockWith {
                 @{
                     userPrincipalName = 'alice@example.com'
@@ -231,6 +270,38 @@ Describe 'Get-CloudPCUsage' {
                     }
                 )
             }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-realtime-active' } -MockWith {
+                @(
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-finished'
+                        EventDateTime = (Get-Date).AddMinutes(-5)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Finished'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                    [pscustomobject]@{
+                        ActivityId    = 'activity-finished'
+                        EventDateTime = (Get-Date).AddHours(-1)
+                        EventType     = 'userConnection'
+                        EventName     = 'Connection Started'
+                        EventResult   = 'success'
+                        Message       = ''
+                        Raw           = @{}
+                    }
+                )
+            }
+            Mock -ModuleName WindowsCloudPC Get-CloudPCRealTimeStatus -ParameterFilter { $CloudPcId -eq 'cpc-dedicated-realtime-active' } -MockWith {
+                [pscustomobject]@{
+                    ManagedDeviceName   = 'CFD-REALTIME-ACTIVE'
+                    CloudPcId           = 'cpc-dedicated-realtime-active'
+                    DaysSinceLastSignIn = 0
+                    SignInStatus        = 'SignedIn'
+                    LastActiveTime      = (Get-Date).AddMinutes(-2)
+                    Raw                 = @{}
+                }
+            }
 
             $script:DedicatedActive = [pscustomobject]@{
                 PSTypeName       = 'WindowsCloudPC.CloudPC'
@@ -268,10 +339,30 @@ Describe 'Get-CloudPCUsage' {
                 ManagedDeviceId  = 'mdm-dedicated'
                 Raw              = @{ connectivityResult = @{ status = 'available' } }
             }
+            $script:DedicatedRealTimeActive = [pscustomobject]@{
+                PSTypeName       = 'WindowsCloudPC.CloudPC'
+                Id               = 'cpc-dedicated-realtime-active'
+                Name             = 'CFD-REALTIME-ACTIVE'
+                ProvisioningType = 'Dedicated'
+                AssignedUserUpn  = 'alice@example.com'
+                ManagedDeviceId  = 'mdm-dedicated'
+                Raw              = @{ connectivityResult = @{ status = 'available' } }
+            }
         }
 
         It 'reports inUse from connectivity history' {
             ($DedicatedActive | Get-CloudPCUsage).UsageStatus | Should -Be 'inUse'
+        }
+
+        It 'prefers real-time sign-in status for dedicated Cloud PCs' {
+            $result = $DedicatedRealTimeActive | Get-CloudPCUsage
+
+            $result.UsageStatus | Should -Be 'inUse'
+            $result.SignInStatus | Should -Be 'SignedIn'
+            $result.DaysSinceLastSignIn | Should -Be 0
+            Should -Invoke -ModuleName WindowsCloudPC Get-CloudPCConnectivityHistory -Times 0 -Exactly -ParameterFilter {
+                $CloudPcId -eq 'cpc-dedicated-realtime-active'
+            }
         }
 
         It 'reports available from connectivity history' {
