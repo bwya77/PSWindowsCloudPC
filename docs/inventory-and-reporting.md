@@ -114,6 +114,24 @@ Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14
 Get-CloudPCUsage | Where-Object UsageStatus -ne 'InUse'
 ```
 
+## Disk space reporting
+
+`Get-CloudPCDiskSpace` joins Cloud PC inventory to the matching Intune managed device record and reports OS disk totals from Intune inventory. Use `LastSyncDateTime` to understand how fresh the storage data is.
+
+```powershell
+Get-CloudPCDiskSpace |
+    Sort-Object PercentFree |
+    Format-Table CloudPcName,AssignedUserUpn,FreeStorageGB,TotalStorageGB,PercentFree,LastSyncDateTime
+```
+
+Common low-space filter:
+
+```powershell
+Get-CloudPCDiskSpace |
+    Where-Object PercentFree -lt 15 |
+    Format-Table CloudPcName,AssignedUserUpn,FreeStorageGB,PercentFree,LastSyncDateTime
+```
+
 ## Launch details
 
 Use launch details when troubleshooting the user connection path for one or more Cloud PCs.

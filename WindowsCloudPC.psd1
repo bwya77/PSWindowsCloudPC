@@ -16,6 +16,7 @@
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCConnectivityHistory',
+        'Get-CloudPCDiskSpace',
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCLicensingAllotment',
         'Get-CloudPCMaintenanceWindow',

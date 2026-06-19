@@ -4,6 +4,7 @@
   "commands/get-cloudpc",
   "commands/get-cloudpcbyprovisioningpolicy",
   "commands/get-cloudpcconnectivityhistory",
+  "commands/get-cloudpcdiskspace",
   "commands/get-cloudpclaunchdetail",
   "commands/get-cloudpclicensingallotment",
   "commands/get-cloudpcmaintenancewindow",

@@ -1,12 +1,12 @@
 {
-  "moduleVersion": "0.1.18",
-  "galleryVersion": "0.1.19",
-  "downloadCount": 80,
-  "publishedDate": "2026-06-18T07:52:02.0000000Z",
-  "commandCount": 27,
-  "testSpecCount": 245,
+  "moduleVersion": "0.1.20",
+  "galleryVersion": "0.1.21",
+  "downloadCount": 90,
+  "publishedDate": "2026-06-19T23:20:08.0000000Z",
+  "commandCount": 28,
+  "testSpecCount": 257,
   "repositoryUrl": "https://github.com/bwya77/PSWindowsCloudPC",
   "galleryUrl": "https://www.powershellgallery.com/packages/WindowsCloudPC",
-  "generatedAt": "2026-06-19T05:13:45.8454072Z",
+  "generatedAt": "2026-06-19T18:52:13.1398777Z",
   "statsSource": "PowerShellGallery"
 }

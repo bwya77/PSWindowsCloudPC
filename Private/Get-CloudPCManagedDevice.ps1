@@ -11,7 +11,7 @@ function Get-CloudPCManagedDevice {
     begin { }
 
     process {
-        $select = 'id,deviceName,userPrincipalName,userDisplayName,lastSyncDateTime,usersLoggedOn,azureADDeviceId'
+        $select = 'id,deviceName,userPrincipalName,userDisplayName,lastSyncDateTime,usersLoggedOn,azureADDeviceId,totalStorageSpaceInBytes,freeStorageSpaceInBytes'
         $uri = "https://graph.microsoft.com/beta/deviceManagement/managedDevices('$ManagedDeviceId')?`$select=$select"
 
         try {

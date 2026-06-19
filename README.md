@@ -47,6 +47,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). Returns `WindowsCloudPC.CloudPC` objects with `.Raw` preserved. |
 | `Get-CloudPCConnectivityHistory` | Get Cloud PC connectivity history events from Graph beta by Cloud PC ID or from `Get-CloudPC` pipeline input. |
+| `Get-CloudPCDiskSpace` | Report Cloud PC OS disk total, free, used, percent free, and last Intune sync time from the matching managed device inventory record. |
 | `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use the real-time remote connection status report for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
@@ -87,6 +88,11 @@ Get-CloudPCUsage -CloudPC 'CPC-brad-U2O0S'
 
 # Idle Cloud PCs (no sign-in in 14+ days)
 Get-CloudPCUsage | Where-Object DaysSinceLastSignIn -ge 14 | Sort-Object DaysSinceLastSignIn -Descending
+
+# Cloud PCs with the least free OS disk space
+Get-CloudPCDiskSpace |
+    Sort-Object PercentFree |
+    Format-Table CloudPcName,AssignedUserUpn,FreeStorageGB,TotalStorageGB,PercentFree,LastSyncDateTime
 
 # Inspect raw connectivity history for a Cloud PC
 Get-CloudPC -Type Dedicated |
