@@ -53,6 +53,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCLaunchDetail` | Get launch details for a Cloud PC, including the Graph launch URL, Windows 365 Switch compatibility, and a computed `ms-cloudpc:connect` Windows App URI when a username is available. Provisioning PCs return `LaunchDetailStatus = 'Unavailable'` instead of a noisy 404. |
 | `Get-CloudPCLicensingAllotment` | List Microsoft Graph cloud licensing allotments from Graph beta. Supports single allotment lookup plus `$select`, `$expand`, `$filter`, `$top`, and `$apply` query shaping. |
 | `Get-CloudPCMaintenanceWindow` | List Cloud PC maintenance windows from Graph beta. Supports exact display name lookup, ID lookup, and optional assignment expansion with resolved group names. |
+| `Get-CloudPCReport` | Retrieve verified Windows 365 Cloud PC report stream files from Graph beta, parse their `Schema` and `Values` arrays, and emit typed report rows. Deprecated reports, live-failing report aliases, and enum values without callable actions are excluded. |
 | `Get-CloudPCRemoteActionResult` | Recent remote-action history (restart, reprovision, restore, …) for a Cloud PC, with `ActionState`, timestamps, and `HasDownTime`. Use right after `Restart-CloudPC` to confirm the action landed. |
 | `Get-CloudPCSettingProfile` | List Windows 365 setting profiles from Graph beta. Use `-Id` for a single profile and `-IncludeDetails` to expand assignments and settings, including object and list setting children. |
 | `Get-CloudPCSnapshot` | List Cloud PC restore point snapshots from Graph beta. Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`, with friendly Cloud PC names and verbose progress output. |
@@ -142,6 +143,18 @@ Get-CloudPC -UserPrincipalName 'user@contoso.com' |
 # List cloud licensing allotments
 Get-CloudPCLicensingAllotment |
     Format-Table SkuPartNumber,AllottedUnits,ConsumedUnits,AvailableUnits,AssignableTo
+
+# Retrieve and parse a Graph Cloud PC report stream
+$pc = Get-CloudPC | Select-Object -First 1
+Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 50 |
+    Format-Table ManagedDeviceName,SignInDateTime,SignOutDateTime,UsageInHour
+
+# Save the raw report file while still returning parsed report rows
+$activity = Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 1
+Get-CloudPCReport -ReportName rawRemoteConnectionReports `
+    -ActivityId $activity.ActivityId `
+    -Select Timestamp,RoundTripTimeInMs,AvailableBandwidthInMBps `
+    -OutputFilePath .\raw-remote-connection-report.json
 
 # Get one cloud licensing allotment by ID
 Get-CloudPCLicensingAllotment -Id '<allotment-id>' |

@@ -21,6 +21,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCMaintenanceWindow](/docs/commands/get-cloudpcmaintenancewindow) | Returns Windows 365 Cloud PC maintenance windows. | Read |
 | [Get-CloudPCProvisioningPolicy](/docs/commands/get-cloudpcprovisioningpolicy) | Returns Windows 365 Cloud PC provisioning policies, with assigned groups resolved. | Read |
 | [Get-CloudPCRemoteActionResult](/docs/commands/get-cloudpcremoteactionresult) | Returns the recent remote-action history (restart, reprovision, restore, etc.) for a Cloud PC. | Read |
+| [Get-CloudPCReport](/docs/commands/get-cloudpcreport) | Retrieves Windows 365 Cloud PC report rows from Microsoft Graph beta stream reports. | Read |
 | [Get-CloudPCSettingProfile](/docs/commands/get-cloudpcsettingprofile) | Returns Windows 365 Cloud PC setting profiles. | Read |
 | [Get-CloudPCSnapshot](/docs/commands/get-cloudpcsnapshot) | Returns snapshots for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCSupportedRegion](/docs/commands/get-cloudpcsupportedregion) | Returns Windows 365 Cloud PC supported regions. | Read |

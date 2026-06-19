@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCReport` retrieves Windows 365 Cloud PC report stream files from
+  Microsoft Graph beta, maps `cloudPcReportName` members to the correct report
+  action, parses the returned `Schema` and `Values` payload, and emits typed
+  `WindowsCloudPC.ReportRow` objects.
+- `Get-CloudPCReport -ReportName` now exposes only reports validated to return
+  streams in live testing. Deprecated names, Graph 400 aliases, and enum values
+  without callable actions are excluded from parameter binding.
 
 ## [0.1.19] - 2026-06-18
 ## [0.1.18] - 2026-06-18

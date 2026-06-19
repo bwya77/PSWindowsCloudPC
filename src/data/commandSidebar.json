@@ -9,6 +9,7 @@
   "commands/get-cloudpcmaintenancewindow",
   "commands/get-cloudpcprovisioningpolicy",
   "commands/get-cloudpcremoteactionresult",
+  "commands/get-cloudpcreport",
   "commands/get-cloudpcsettingprofile",
   "commands/get-cloudpcsnapshot",
   "commands/get-cloudpcsupportedregion",

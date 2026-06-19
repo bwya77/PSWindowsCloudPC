@@ -126,6 +126,35 @@ Get-CloudPC |
 
 The module uses the newer `retrieveCloudPcLaunchDetail` Graph action, not the deprecated `getCloudPcLaunchInfo` action.
 
+## Graph Cloud PC report streams
+
+`Get-CloudPCReport` retrieves Windows 365 Cloud PC report streams from Microsoft Graph beta and parses the downloaded `Schema` and `Values` file into typed PowerShell rows.
+
+```powershell
+$pc = Get-CloudPC | Select-Object -First 1
+Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 50 |
+    Format-Table ManagedDeviceName,SignInDateTime,SignOutDateTime,UsageInHour
+```
+
+Use `-Select`, `-Filter`, `-Search`, `-GroupBy`, `-OrderBy`, `-Skip`, and `-Top` to pass Graph report query options when the target report action supports them. The command intentionally exposes only reports that returned successfully in live testing. Deprecated reports, tenant-state-dependent aliases that returned Graph 400s, and enum values without callable actions are excluded from `-ReportName`.
+
+```powershell
+Get-CloudPCReport -ReportName regionalConnectionQualityTrendReport -Top 50 |
+    Format-Table GatewayRegionName,WeeklyAvgRoundTripTimeInMs,WeeklyAvgAvailableBandwidthInMbps
+```
+
+Use `-OutputFilePath` to keep the raw Graph report file for audit or troubleshooting, or `-Raw` to inspect the parsed payload and schema directly.
+
+Some Graph reports require scoped filters. Use `-CloudPcId` for `remoteConnectionHistoricalReports`, and use an `ActivityId` from that history when drilling into `rawRemoteConnectionReports`.
+
+```powershell
+$activity = Get-CloudPCReport -ReportName remoteConnectionHistoricalReports -CloudPcId $pc.Id -Top 1
+
+Get-CloudPCReport -ReportName rawRemoteConnectionReports `
+    -ActivityId $activity.ActivityId `
+    -Select Timestamp,RoundTripTimeInMs,AvailableBandwidthInMBps
+```
+
 ## Remote action history
 
 After restart, reprovision, restore, or snapshot-related actions, use remote action history to check what Graph reports for the device.

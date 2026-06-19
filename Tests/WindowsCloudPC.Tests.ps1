@@ -9,6 +9,7 @@ BeforeDiscovery {
         'Get-CloudPCLicensingAllotment',
         'Get-CloudPCMaintenanceWindow',
         'Get-CloudPCProvisioningPolicy',
+        'Get-CloudPCReport',
         'Get-CloudPCRemoteActionResult',
         'Get-CloudPCSettingProfile',
         'Get-CloudPCSnapshot',
