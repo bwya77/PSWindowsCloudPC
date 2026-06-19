@@ -70,6 +70,25 @@ New-CloudPCSnapshot -All -WhatIf
 
 Run without `-WhatIf` only after the target list is correct.
 
+## Restore from a snapshot
+
+`Restore-CloudPC` restores a Cloud PC from a restore point snapshot through Microsoft Graph v1.0. This is a destructive remote action, so preview the target with `-WhatIf` before running it.
+
+Restore from the newest snapshot returned for a Cloud PC:
+
+```powershell
+Get-CloudPCSnapshot -CloudPC 'CPC-NAME-01' |
+    Select-Object -First 1 |
+    Restore-CloudPC -WhatIf
+```
+
+Restore by Cloud PC and snapshot ID:
+
+```powershell
+Restore-CloudPC -CloudPC 'CPC-NAME-01' -SnapshotId '<snapshot-id>' -Force -PassThru |
+    Format-Table CloudPcName,SnapshotId,Status,ErrorMessage
+```
+
 ## Result handling
 
 Fleet commands return one row per Cloud PC. Use `Status`, `Excluded`, and `ErrorMessage` to review what happened.
@@ -79,4 +98,3 @@ New-CloudPCSnapshot -All -Force |
     Where-Object Status -ne 'Submitted' |
     Format-Table CloudPcName,Status,ErrorMessage
 ```
-

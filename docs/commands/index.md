@@ -20,9 +20,11 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCLaunchDetail](/docs/commands/get-cloudpclaunchdetail) | Gets launch details for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCLicensingAllotment](/docs/commands/get-cloudpclicensingallotment) | Returns Microsoft Graph cloud licensing allotments. | Read |
 | [Get-CloudPCMaintenanceWindow](/docs/commands/get-cloudpcmaintenancewindow) | Returns Windows 365 Cloud PC maintenance windows. | Read |
+| [Get-CloudPCOrganizationSetting](/docs/commands/get-cloudpcorganizationsetting) | Returns Windows 365 Cloud PC organization settings. | Read |
 | [Get-CloudPCProvisioningPolicy](/docs/commands/get-cloudpcprovisioningpolicy) | Returns Windows 365 Cloud PC provisioning policies, with assigned groups resolved. | Read |
 | [Get-CloudPCRemoteActionResult](/docs/commands/get-cloudpcremoteactionresult) | Returns the recent remote-action history (restart, reprovision, restore, etc.) for a Cloud PC. | Read |
 | [Get-CloudPCReport](/docs/commands/get-cloudpcreport) | Retrieves Windows 365 Cloud PC report rows from Microsoft Graph beta stream reports. | Read |
+| [Get-CloudPCServicePlan](/docs/commands/get-cloudpcserviceplan) | Returns Windows 365 Cloud PC service plans. | Read |
 | [Get-CloudPCSettingProfile](/docs/commands/get-cloudpcsettingprofile) | Returns Windows 365 Cloud PC setting profiles. | Read |
 | [Get-CloudPCSnapshot](/docs/commands/get-cloudpcsnapshot) | Returns snapshots for one or more Windows 365 Cloud PCs. | Read |
 | [Get-CloudPCSupportedRegion](/docs/commands/get-cloudpcsupportedregion) | Returns Windows 365 Cloud PC supported regions. | Read |
@@ -35,7 +37,9 @@ These pages are generated from the module's comment-based help each time the Doc
 | [New-CloudPCSnapshot](/docs/commands/new-cloudpcsnapshot) | Creates restore point snapshots for one or more Windows 365 Cloud PCs. | Action |
 | [Remove-CloudPCMaintenanceWindow](/docs/commands/remove-cloudpcmaintenancewindow) | Deletes a Windows 365 Cloud PC maintenance window. | Action |
 | [Remove-CloudPCProvisioningPolicy](/docs/commands/remove-cloudpcprovisioningpolicy) | Deletes a Windows 365 Cloud PC provisioning policy. | Action |
+| [Rename-CloudPC](/docs/commands/rename-cloudpc) | Renames a Windows 365 Cloud PC display name. | Action |
 | [Reset-CloudPCLocalAdminPassword](/docs/commands/reset-cloudpclocaladminpassword) | Rotates the local admin password for one or more Windows 365 Cloud PCs. | Action |
 | [Restart-CloudPC](/docs/commands/restart-cloudpc) | Reboots one or more Windows 365 Cloud PCs. | Action |
+| [Restore-CloudPC](/docs/commands/restore-cloudpc) | Restores a Windows 365 Cloud PC from a restore point snapshot. | Action |
 | [Start-CloudPC](/docs/commands/start-cloudpc) | Powers on one or more Windows 365 Cloud PCs. | Action |
 | [Sync-CloudPC](/docs/commands/sync-cloudpc) | Syncs one or more Windows 365 Cloud PCs through the Intune managed device action. | Action |

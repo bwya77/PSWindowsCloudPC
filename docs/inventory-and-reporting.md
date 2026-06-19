@@ -19,6 +19,8 @@ Get-CloudPC |
 Filter by user or provisioning policy when you already know the scope.
 
 ```powershell
+Get-CloudPC -Id '<cloud-pc-id>'
+Get-CloudPC -Name 'CPC-brad-*'
 Get-CloudPC -UserPrincipalName user@contoso.com
 Get-CloudPC -ProvisioningPolicyId '<policy-id>'
 ```
@@ -37,6 +39,32 @@ Use `Get-CloudPCProvisioningPolicy` when you need policy details and assignment 
 ```powershell
 Get-CloudPCProvisioningPolicy |
     Select-Object DisplayName,Id,ProvisioningType,ImageDisplayName,ManagedBy
+```
+
+## Service plans
+
+`Get-CloudPCServicePlan` lists the Windows 365 Cloud PC service plans available to the tenant. Use it before resize planning or SKU comparisons.
+
+```powershell
+Get-CloudPCServicePlan |
+    Sort-Object Type,VCpuCount,RamGB,StorageGB |
+    Format-Table DisplayName,Type,VCpuCount,RamGB,StorageGB
+```
+
+Filter by plan type or exact display name:
+
+```powershell
+Get-CloudPCServicePlan -Type enterprise
+Get-CloudPCServicePlan -DisplayName 'Cloud PC Enterprise 4vCPU/16GB/128GB'
+```
+
+## Organization settings
+
+`Get-CloudPCOrganizationSetting` reads the tenant-wide Windows 365 organization defaults. These include OS version, user account type, Microsoft Endpoint Manager auto-enrollment, single sign-on, and Windows language.
+
+```powershell
+Get-CloudPCOrganizationSetting |
+    Select-Object OsVersion,UserAccountType,MEMAutoEnrollEnabled,SingleSignOnEnabled,WindowsLanguage
 ```
 
 ## Export and recreate provisioning policies
@@ -194,6 +222,23 @@ After restart, reprovision, restore, or snapshot-related actions, use remote act
 Get-CloudPCRemoteActionResult -CloudPC '<cloud-pc-id>' |
     Sort-Object StartDateTime -Descending |
     Format-Table ActionName,ActionState,StartDateTime,LastUpdatedDateTime
+```
+
+## Rename Cloud PCs
+
+`Rename-CloudPC` updates the Cloud PC display name through Microsoft Graph v1.0. Preview the target first with `-WhatIf`.
+
+```powershell
+Rename-CloudPC -CloudPC 'CPC-USER-01' -NewDisplayName 'Finance-CloudPC-01' -WhatIf
+```
+
+To also rename the linked Intune managed device, provide `-ManagedDeviceName`. This calls the managed device `setDeviceName` action and requires the additional `DeviceManagementManagedDevices.PrivilegedOperations.All` scope.
+
+```powershell
+Rename-CloudPC -CloudPC 'CPC-USER-01' `
+    -NewDisplayName 'Finance-CloudPC-01' `
+    -ManagedDeviceName 'Finance-CloudPC-01' `
+    -WhatIf
 ```
 
 ## Export reports

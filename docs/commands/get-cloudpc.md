@@ -15,6 +15,10 @@ normalized PSCustomObjects (PSTypeName = 'WindowsCloudPC.CloudPC') suitable for 
 into Get-CloudPCUsage, Where-Object, Format-Table, etc. The raw Graph object is preserved
 on the .Raw property.
 
+Name is the Cloud PC displayName, which is the value changed by Rename-CloudPC.
+ManagedDeviceName is returned separately because it can remain unchanged after a
+Cloud PC display name rename.
+
 The request selects connectivityResult and sends
 Prefer: include-unknown-enum-members so Graph returns evolvable enum
 values such as inUse and underServiceMaintenance.
@@ -23,7 +27,7 @@ values such as inUse and underServiceMaintenance.
 
 ```powershell
 
-Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [[-Type] <string>] [<CommonParameters>]
+Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [[-Id] <string>] [[-Name] <string>] [[-Type] <string>] [<CommonParameters>]
 
 ```
 
@@ -31,6 +35,8 @@ Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [
 
 | Name | Type | Required | Aliases | Description |
 | --- | --- | --- | --- | --- |
+| `Id` | `String` | No | `CloudPcId` | Return a single Cloud PC by Cloud PC ID. |
+| `Name` | `String` | No | `DisplayName`, `ManagedDeviceName` | Filter by Cloud PC display name or managed device name. Exact matches are used<br />unless the value contains wildcard characters. Aliases: DisplayName, ManagedDeviceName. |
 | `ProvisioningPolicyId` | `String` | No |  | Filter to a single provisioning policy. |
 | `Type` | `String` | No |  | Shared, Dedicated, or All (default). |
 | `UserPrincipalName` | `String` | No |  | Filter to Cloud PCs assigned to a specific user (dedicated only — Graph cannot filter<br />sharedDeviceDetail by user). |
@@ -39,7 +45,9 @@ Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [
 
 ```plaintext
 Id                     : 00000000-0000-0000-0000-000000000000
-Name                   : CPC-USER-01
+Name                   : Finance-CloudPC-01
+DisplayName            : Finance-CloudPC-01
+ManagedDeviceName      : CPC-USER-01
 ProvisioningType       : Dedicated
 ProvisioningPolicyName : W365-Flex-Dedicated
 ProvisioningPolicyId   : 00000000-0000-0000-0000-000000000000
@@ -57,6 +65,7 @@ Raw                    : {[sharedDeviceDetail, ], [provisioningType, sharedByUse
 
 ```text
 /beta/deviceManagement/virtualEndpoint/cloudPCs
+/beta/deviceManagement/virtualEndpoint/cloudPCs/
 ```
 
 ## Example 1
@@ -69,6 +78,18 @@ Get-CloudPC | Format-Table Name,ProvisioningType,AssignedUserUpn,ConnectivitySta
 
 ```powershell
 Get-CloudPC -ProvisioningPolicyId 8e8a545f-6168-4472-9466-9f05520a5eb3 -Type Shared
+```
+
+## Example 3
+
+```powershell
+Get-CloudPC -Id '95194d88-cec5-4b65-af62-26dbd1814364'
+```
+
+## Example 4
+
+```powershell
+Get-CloudPC -Name 'CFD-brad-*'
 ```
 
 

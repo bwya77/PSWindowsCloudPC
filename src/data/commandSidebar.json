@@ -8,9 +8,11 @@
   "commands/get-cloudpclaunchdetail",
   "commands/get-cloudpclicensingallotment",
   "commands/get-cloudpcmaintenancewindow",
+  "commands/get-cloudpcorganizationsetting",
   "commands/get-cloudpcprovisioningpolicy",
   "commands/get-cloudpcremoteactionresult",
   "commands/get-cloudpcreport",
+  "commands/get-cloudpcserviceplan",
   "commands/get-cloudpcsettingprofile",
   "commands/get-cloudpcsnapshot",
   "commands/get-cloudpcsupportedregion",
@@ -23,8 +25,10 @@
   "commands/new-cloudpcsnapshot",
   "commands/remove-cloudpcmaintenancewindow",
   "commands/remove-cloudpcprovisioningpolicy",
+  "commands/rename-cloudpc",
   "commands/reset-cloudpclocaladminpassword",
   "commands/restart-cloudpc",
+  "commands/restore-cloudpc",
   "commands/start-cloudpc",
   "commands/sync-cloudpc"
 ]

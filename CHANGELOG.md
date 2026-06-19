@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Get-CloudPCServicePlan` lists available Windows 365 Cloud PC service plans
+  from Microsoft Graph beta, including vCPU, RAM, storage, user profile size,
+  plan type, and raw Graph data.
+- `Get-CloudPCOrganizationSetting` reads tenant-wide Windows 365 organization
+  defaults such as OS version, user account type, MEM auto-enrollment, single
+  sign-on, Windows language, and raw Graph data.
+- `Rename-CloudPC` renames Cloud PC display names through Microsoft Graph v1.0
+  and supports `-WhatIf`, `-Force`, `-PassThru`, object pipeline input, exact
+  names, and IDs.
+- `Rename-CloudPC -ManagedDeviceName` optionally renames the linked Intune
+  managed device through the beta `managedDevices/{id}/setDeviceName` action
+  and requests `DeviceManagementManagedDevices.PrivilegedOperations.All` only
+  when that path is used.
+- `Restore-CloudPC` restores a Cloud PC from a restore point snapshot through
+  Microsoft Graph v1.0. It accepts Cloud PC targets with `-SnapshotId` or
+  `WindowsCloudPC.Snapshot` pipeline input from `Get-CloudPCSnapshot`.
+
+### Changed
+- `Get-CloudPC` now supports direct lookup with `-Id` / `-CloudPcId` and name
+  filtering with `-Name` / `-DisplayName` / `-ManagedDeviceName`, including
+  wildcard searches.
+- `Get-CloudPC` now sets `Name` from the Cloud PC `displayName`, the value
+  changed by `Rename-CloudPC`, and exposes the Intune device name separately as
+  `ManagedDeviceName`.
+- Docusaurus command reference generation now classifies `Rename-*` and
+  `Restore-*` commands as actions.
 
 ## [0.1.22] - 2026-06-19
 ## [0.1.21] - 2026-06-19

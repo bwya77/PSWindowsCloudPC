@@ -19,6 +19,7 @@ Describe 'Get-CloudPC' {
                         id                     = 'cpc-shared-1'
                         managedDeviceId        = 'mdm-shared-1'
                         managedDeviceName      = 'CPC-SHARED-01'
+                        displayName            = 'Shared Cloud PC Display'
                         status                 = 'provisioned'
                         provisioningType       = 'sharedByEntraGroup'
                         provisioningPolicyId   = 'pol-shared'
@@ -37,6 +38,7 @@ Describe 'Get-CloudPC' {
                         id                     = 'cpc-dedicated-1'
                         managedDeviceId        = 'mdm-dedicated-1'
                         managedDeviceName      = 'CPC-DEDICATED-01'
+                        displayName            = 'Dedicated Cloud PC Display'
                         status                 = 'provisioned'
                         provisioningType       = 'dedicated'
                         provisioningPolicyId   = 'pol-dedicated'
@@ -50,6 +52,28 @@ Describe 'Get-CloudPC' {
                     }
                 )
             }
+        } -ParameterFilter {
+            $Uri -like 'https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/cloudPCs?*'
+        }
+        Mock -ModuleName WindowsCloudPC Invoke-MgGraphRequest {
+            @{
+                id                     = 'cpc-dedicated-1'
+                managedDeviceId        = 'mdm-dedicated-1'
+                managedDeviceName      = 'CPC-DEDICATED-01'
+                displayName            = 'Dedicated Cloud PC Display'
+                status                 = 'provisioned'
+                provisioningType       = 'dedicated'
+                provisioningPolicyId   = 'pol-dedicated'
+                provisioningPolicyName = 'Dedicated Policy'
+                servicePlanName        = 'Enterprise'
+                userPrincipalName      = 'alice@example.com'
+                sharedDeviceDetail     = $null
+                connectivityResult     = @{ status = 'available' }
+                lastModifiedDateTime   = '2026-06-15T17:00:00Z'
+                aadDeviceId            = 'aad-dedicated-1'
+            }
+        } -ParameterFilter {
+            $Uri -like 'https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/cloudPCs/cpc-dedicated-1?*'
         }
     }
 
@@ -87,6 +111,14 @@ Describe 'Get-CloudPC' {
         (Get-CloudPC -Type Dedicated).AssignedUserUpn | Should -Be 'alice@example.com'
     }
 
+    It 'uses displayName for Name and preserves managedDeviceName separately' {
+        $pc = Get-CloudPC | Where-Object Id -eq 'cpc-dedicated-1'
+
+        $pc.Name | Should -Be 'Dedicated Cloud PC Display'
+        $pc.DisplayName | Should -Be 'Dedicated Cloud PC Display'
+        $pc.ManagedDeviceName | Should -Be 'CPC-DEDICATED-01'
+    }
+
     It 'preserves the raw Graph payload on .Raw' {
         (Get-CloudPC | Select-Object -First 1).Raw | Should -Not -BeNullOrEmpty
     }
@@ -104,5 +136,43 @@ Describe 'Get-CloudPC' {
         Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -ParameterFilter {
             $Uri -match 'pol-shared'
         }
+    }
+
+    It 'gets a single Cloud PC by Id' {
+        $pc = Get-CloudPC -Id 'cpc-dedicated-1'
+
+        $pc.Id | Should -Be 'cpc-dedicated-1'
+        $pc.Name | Should -Be 'Dedicated Cloud PC Display'
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -Times 1 -Exactly -ParameterFilter {
+            $Method -eq 'GET' -and
+            $Uri -like 'https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/cloudPCs/cpc-dedicated-1?*'
+        }
+    }
+
+    It 'filters by exact display name' {
+        $pc = Get-CloudPC -Name 'Dedicated Cloud PC Display'
+
+        $pc | Should -HaveCount 1
+        $pc.Id | Should -Be 'cpc-dedicated-1'
+    }
+
+    It 'filters by exact managed device name' {
+        $pc = Get-CloudPC -Name 'CPC-DEDICATED-01'
+
+        $pc | Should -HaveCount 1
+        $pc.DisplayName | Should -Be 'Dedicated Cloud PC Display'
+    }
+
+    It 'supports wildcard name searches' {
+        $pcs = Get-CloudPC -Name '*Cloud PC Display'
+
+        $pcs | Should -HaveCount 2
+        $pcs.Id | Should -Contain 'cpc-shared-1'
+        $pcs.Id | Should -Contain 'cpc-dedicated-1'
+    }
+
+    It 'rejects using Id and Name together' {
+        { Get-CloudPC -Id 'cpc-dedicated-1' -Name 'Dedicated Cloud PC Display' } |
+            Should -Throw -ExpectedMessage '*use either -Id or -Name*'
     }
 }
