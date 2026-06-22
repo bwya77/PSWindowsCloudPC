@@ -171,6 +171,23 @@ Describe 'Get-CloudPC' {
         $pcs.Id | Should -Contain 'cpc-dedicated-1'
     }
 
+    It 'adds ProvisioningStatus to the Graph filter' {
+        Get-CloudPC -ProvisioningStatus inGracePeriod | Out-Null
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -ParameterFilter {
+            $Uri -match 'inGracePeriod'
+        }
+    }
+
+    It 'supports multiple ProvisioningStatus values' {
+        Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning | Out-Null
+
+        Should -Invoke -ModuleName WindowsCloudPC Invoke-MgGraphRequest -ParameterFilter {
+            $Uri -match 'inGracePeriod' -and
+            $Uri -match 'deprovisioning'
+        }
+    }
+
     It 'rejects using Id and Name together' {
         { Get-CloudPC -Id 'cpc-dedicated-1' -Name 'Dedicated Cloud PC Display' } |
             Should -Throw -ExpectedMessage '*use either -Id or -Name*'

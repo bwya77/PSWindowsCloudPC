@@ -62,6 +62,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Get-CloudPCSnapshot` | List Cloud PC restore point snapshots from Graph beta. Supports `-Id`, `-CloudPC` object or friendly name, `-User`, and `-All`, with friendly Cloud PC names and verbose progress output. |
 | `Get-CloudPCSupportedRegion` | List Windows 365 supported Cloud PC regions from Graph beta, including region status, supported solution, region group, and geographic location type. Supports client-side filters for status, solution, region group, and geography. |
 | `Get-CloudPCUserSetting` | List Windows 365 Cloud PC user settings from Graph beta, including reset, restore point, local admin, cross-region disaster recovery, notification, and assignment details. |
+| `Invoke-CloudPCEndGracePeriod` | Ends the grace period for one or more Cloud PCs through Microsoft Graph beta. Use `Get-CloudPC -ProvisioningStatus inGracePeriod` first to review targets. |
 | `Invoke-CloudPCReprovision` | Reprovision one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), optional `-OsVersion` / `-UserAccountType`, `-Force`, and `-PassThru`. |
 | `Invoke-CloudPCPolicyReprovision` | Reprovision every Cloud PC in a provisioning policy, optionally excluding specific Cloud PCs by name, ID, managed device ID, Azure AD device ID, or assigned user UPN. Emits a target/result row for every included or excluded PC. |
 | `New-CloudPCMaintenanceWindow` | Create Cloud PC maintenance windows from weekday and weekend times, or custom schedule objects. Uses the portal-style weekday plus weekend payload, supports `-WhatIf`, two-hour minimum validation, optional group assignment, and result metadata. |
@@ -282,6 +283,11 @@ Invoke-CloudPCPolicyReprovision -ProvisioningPolicyId '<policy-id>' `
     -ExcludeCloudPC 'CPC-KEEP-01','CPC-KEEP-02','cpc-id-3','user4@contoso.com' `
     -OsVersion windows11 -UserAccountType standardUser -Force |
     Format-Table CloudPcName,AssignedUserUpn,Status,Excluded,ErrorMessage
+
+# Review and preview ending grace period for Cloud PCs
+Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning |
+    Format-Table Name,AssignedUserUpn,ProvisioningStatus
+Invoke-CloudPCEndGracePeriod -All -WhatIf
 
 # Tenant-wide most-recent-action snapshot
 Get-CloudPC | Get-CloudPCRemoteActionResult |

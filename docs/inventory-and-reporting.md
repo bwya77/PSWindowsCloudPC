@@ -21,6 +21,8 @@ Filter by user or provisioning policy when you already know the scope.
 ```powershell
 Get-CloudPC -Id '<cloud-pc-id>'
 Get-CloudPC -Name 'CPC-brad-*'
+Get-CloudPC -ProvisioningStatus inGracePeriod
+Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning
 Get-CloudPC -UserPrincipalName user@contoso.com
 Get-CloudPC -ProvisioningPolicyId '<policy-id>'
 ```
@@ -65,6 +67,23 @@ Get-CloudPCServicePlan -DisplayName 'Cloud PC Enterprise 4vCPU/16GB/128GB'
 ```powershell
 Get-CloudPCOrganizationSetting |
     Select-Object OsVersion,UserAccountType,MEMAutoEnrollEnabled,SingleSignOnEnabled,WindowsLanguage
+```
+
+## Grace period
+
+Cloud PCs in grace period can be found with `Get-CloudPC -ProvisioningStatus inGracePeriod`, which maps to the Graph `status eq 'inGracePeriod'` filter. You can pass multiple statuses, such as `inGracePeriod,deprovisioning`, to watch the full deprovisioning flow. Ending grace period immediately deprovisions the Cloud PC through the Graph beta `endGracePeriod` action, so preview with `-WhatIf`.
+
+```powershell
+Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning |
+    Format-Table Name,AssignedUserUpn,ProvisioningStatus
+
+Invoke-CloudPCEndGracePeriod -All -WhatIf
+```
+
+The `endGracePeriod` action is asynchronous. After Graph accepts the request, a Cloud PC can still appear as `inGracePeriod` for several minutes while Windows 365 updates state. Use `-PassThru` for a verification command and expected lag, or add `-Wait` to poll until the Cloud PC leaves `inGracePeriod` or the timeout is reached.
+
+```powershell
+Invoke-CloudPCEndGracePeriod -CloudPC 'CPC-GRACE-01' -Force -PassThru -Wait
 ```
 
 ## Export and recreate provisioning policies

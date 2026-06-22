@@ -30,6 +30,7 @@ These pages are generated from the module's comment-based help each time the Doc
 | [Get-CloudPCSupportedRegion](/docs/commands/get-cloudpcsupportedregion) | Returns Windows 365 Cloud PC supported regions. | Read |
 | [Get-CloudPCUsage](/docs/commands/get-cloudpcusage) | Reports who is signed in to each Cloud PC and whether it is in use or available. | Read |
 | [Get-CloudPCUserSetting](/docs/commands/get-cloudpcusersetting) | Returns Windows 365 Cloud PC user settings. | Read |
+| [Invoke-CloudPCEndGracePeriod](/docs/commands/invoke-cloudpcendgraceperiod) | Ends the grace period for one or more Windows 365 Cloud PCs. | Action |
 | [Invoke-CloudPCPolicyReprovision](/docs/commands/invoke-cloudpcpolicyreprovision) | Reprovisions Cloud PCs assigned to a provisioning policy. | Action |
 | [Invoke-CloudPCReprovision](/docs/commands/invoke-cloudpcreprovision) | Reprovisions one or more Windows 365 Cloud PCs. | Action |
 | [New-CloudPCMaintenanceWindow](/docs/commands/new-cloudpcmaintenancewindow) | Creates a Windows 365 Cloud PC maintenance window. | Action |

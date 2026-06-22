@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Get-CloudPCOrganizationSetting` reads tenant-wide Windows 365 organization
   defaults such as OS version, user account type, MEM auto-enrollment, single
   sign-on, Windows language, and raw Graph data.
+- `Invoke-CloudPCEndGracePeriod` ends the grace period for Cloud PCs through
+  Microsoft Graph beta. `-All` targets Cloud PCs returned by
+  `Get-CloudPC -ProvisioningStatus inGracePeriod`.
 - `Rename-CloudPC` renames Cloud PC display names through Microsoft Graph v1.0
   and supports `-WhatIf`, `-Force`, `-PassThru`, object pipeline input, exact
   names, and IDs.
@@ -30,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Get-CloudPC` now supports direct lookup with `-Id` / `-CloudPcId` and name
   filtering with `-Name` / `-DisplayName` / `-ManagedDeviceName`, including
   wildcard searches.
+- `Get-CloudPC` now supports one or more `-ProvisioningStatus` values,
+  including `inGracePeriod` and `deprovisioning`, to find Cloud PCs by Graph
+  status.
 - `Get-CloudPC` now sets `Name` from the Cloud PC `displayName`, the value
   changed by `Rename-CloudPC`, and exposes the Intune device name separately as
   `ManagedDeviceName`.

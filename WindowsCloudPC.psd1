@@ -30,6 +30,7 @@
         'Get-CloudPCSupportedRegion',
         'Get-CloudPCUsage',
         'Get-CloudPCUserSetting',
+        'Invoke-CloudPCEndGracePeriod',
         'Invoke-CloudPCPolicyReprovision',
         'Invoke-CloudPCReprovision',
         'New-CloudPCMaintenanceWindow',

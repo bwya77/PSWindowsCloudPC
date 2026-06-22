@@ -18,6 +18,7 @@
   "commands/get-cloudpcsupportedregion",
   "commands/get-cloudpcusage",
   "commands/get-cloudpcusersetting",
+  "commands/invoke-cloudpcendgraceperiod",
   "commands/invoke-cloudpcpolicyreprovision",
   "commands/invoke-cloudpcreprovision",
   "commands/new-cloudpcmaintenancewindow",

@@ -31,6 +31,10 @@ function Get-CloudPC {
         Filter by Cloud PC display name or managed device name. Exact matches are used
         unless the value contains wildcard characters. Aliases: DisplayName, ManagedDeviceName.
 
+    .PARAMETER ProvisioningStatus
+        Filter by one or more Cloud PC statuses, such as provisioned,
+        inGracePeriod, or deprovisioning.
+
     .PARAMETER Type
         Shared, Dedicated, or All (default).
 
@@ -45,6 +49,12 @@ function Get-CloudPC {
 
     .EXAMPLE
         Get-CloudPC -Name 'CFD-brad-*'
+
+    .EXAMPLE
+        Get-CloudPC -ProvisioningStatus inGracePeriod
+
+    .EXAMPLE
+        Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning
     #>
     [CmdletBinding()]
     [OutputType('WindowsCloudPC.CloudPC')]
@@ -63,6 +73,8 @@ function Get-CloudPC {
         [SupportsWildcards()]
         [string]$Name,
 
+        [string[]]$ProvisioningStatus,
+
         [ValidateSet('Shared','Dedicated','All')]
         [string]$Type = 'All'
     )
@@ -79,6 +91,20 @@ function Get-CloudPC {
         $filters = @("servicePlanType eq 'enterprise'")
         if ($ProvisioningPolicyId) { $filters += "provisioningPolicyId eq '$ProvisioningPolicyId'" }
         if ($UserPrincipalName)    { $filters += "userPrincipalName eq '$UserPrincipalName'" }
+        if ($ProvisioningStatus) {
+            $statusFilters = @(
+                foreach ($status in $ProvisioningStatus) {
+                    if ([string]::IsNullOrWhiteSpace($status)) { continue }
+                    "status eq '$($status -replace "'","''")'"
+                }
+            )
+            if ($statusFilters.Count -eq 1) {
+                $filters += $statusFilters[0]
+            }
+            elseif ($statusFilters.Count -gt 1) {
+                $filters += '(' + ($statusFilters -join ' or ') + ')'
+            }
+        }
         $filter = ($filters -join ' and ')
 
         $select = @(

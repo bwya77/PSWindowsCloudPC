@@ -27,7 +27,7 @@ values such as inUse and underServiceMaintenance.
 
 ```powershell
 
-Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [[-Id] <string>] [[-Name] <string>] [[-Type] <string>] [<CommonParameters>]
+Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [[-Id] <string>] [[-Name] <string>] [[-ProvisioningStatus] <string[]>] [[-Type] <string>] [<CommonParameters>]
 
 ```
 
@@ -38,6 +38,7 @@ Get-CloudPC [[-ProvisioningPolicyId] <string>] [[-UserPrincipalName] <string>] [
 | `Id` | `String` | No | `CloudPcId` | Return a single Cloud PC by Cloud PC ID. |
 | `Name` | `String` | No | `DisplayName`, `ManagedDeviceName` | Filter by Cloud PC display name or managed device name. Exact matches are used<br />unless the value contains wildcard characters. Aliases: DisplayName, ManagedDeviceName. |
 | `ProvisioningPolicyId` | `String` | No |  | Filter to a single provisioning policy. |
+| `ProvisioningStatus` | `String[]` | No |  | Filter by one or more Cloud PC statuses, such as provisioned,<br />inGracePeriod, or deprovisioning. |
 | `Type` | `String` | No |  | Shared, Dedicated, or All (default). |
 | `UserPrincipalName` | `String` | No |  | Filter to Cloud PCs assigned to a specific user (dedicated only — Graph cannot filter<br />sharedDeviceDetail by user). |
 
@@ -90,6 +91,18 @@ Get-CloudPC -Id '95194d88-cec5-4b65-af62-26dbd1814364'
 
 ```powershell
 Get-CloudPC -Name 'CFD-brad-*'
+```
+
+## Example 5
+
+```powershell
+Get-CloudPC -ProvisioningStatus inGracePeriod
+```
+
+## Example 6
+
+```powershell
+Get-CloudPC -ProvisioningStatus inGracePeriod,deprovisioning
 ```
 
 
