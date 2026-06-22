@@ -35,12 +35,12 @@
   --ifm-font-color-base: #e6edf7;
   --ifm-font-color-secondary: #a7b4c7;
   --ifm-heading-color: #f6fbff;
-  --ifm-link-color: #67e8f9;
-  --ifm-link-hover-color: #a5f3fc;
+  --ifm-link-color: #38bdf8;
+  --ifm-link-hover-color: #67e8f9;
   --ifm-navbar-background-color: #08111f;
   --ifm-footer-background-color: #050b14;
   --ifm-menu-color: #d7e1ee;
-  --ifm-menu-color-active: #67e8f9;
+  --ifm-menu-color-active: #38bdf8;
   --ifm-menu-color-background-active: rgba(56, 189, 248, 0.13);
   --ifm-menu-color-background-hover: rgba(148, 163, 184, 0.11);
   --ifm-code-background: #06101c;
