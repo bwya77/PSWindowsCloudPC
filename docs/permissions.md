@@ -21,7 +21,7 @@ These cover Cloud PC inventory, assigned users, provisioning policies, groups, r
 
 | Scope | Used by |
 | --- | --- |
-| `CloudPC.ReadWrite.All` | `Start-CloudPC`, `Restart-CloudPC`, `Invoke-CloudPCReprovision`, `Invoke-CloudPCPolicyReprovision`, `New-CloudPCSnapshot` |
+| `CloudPC.ReadWrite.All` | `Start-CloudPC`, `Restart-CloudPC`, `Resize-CloudPC`, `Invoke-CloudPCReprovision`, `Invoke-CloudPCPolicyReprovision`, `New-CloudPCSnapshot` |
 | `DeviceManagementManagedDevices.PrivilegedOperations.All` | `Sync-CloudPC`, `Reset-CloudPCLocalAdminPassword` |
 | `CloudLicensing.Read` | `Get-CloudPCLicensingAllotment` |
 
@@ -33,7 +33,7 @@ These cover Cloud PC inventory, assigned users, provisioning policies, groups, r
 | Inventory | `Get-CloudPC`, `Get-CloudPCByProvisioningPolicy`, `Get-CloudPCProvisioningPolicy`, `Get-CloudPCSupportedRegion`, `Get-CloudPCSettingProfile`, `Get-CloudPCUserSetting` | `CloudPC.Read.All`, plus user and group read scopes |
 | Usage and actions | `Get-CloudPCUsage`, `Get-CloudPCConnectivityHistory`, `Get-CloudPCLaunchDetail`, `Get-CloudPCRemoteActionResult` | `CloudPC.Read.All`, `DeviceManagementManagedDevices.Read.All` |
 | Snapshots | `Get-CloudPCSnapshot`, `New-CloudPCSnapshot` | Read for viewing, `CloudPC.ReadWrite.All` for creating |
-| Power and provisioning actions | `Start-CloudPC`, `Restart-CloudPC`, `Invoke-CloudPCReprovision`, `Invoke-CloudPCPolicyReprovision` | `CloudPC.ReadWrite.All` |
+| Power and provisioning actions | `Start-CloudPC`, `Restart-CloudPC`, `Resize-CloudPC`, `Invoke-CloudPCReprovision`, `Invoke-CloudPCPolicyReprovision` | `CloudPC.ReadWrite.All` |
 | Managed device actions | `Sync-CloudPC`, `Reset-CloudPCLocalAdminPassword` | `DeviceManagementManagedDevices.PrivilegedOperations.All` |
 | Licensing | `Get-CloudPCLicensingAllotment` | `CloudLicensing.Read` |
 

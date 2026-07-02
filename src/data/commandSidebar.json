@@ -4,7 +4,9 @@
   "commands/get-cloudpc",
   "commands/get-cloudpcbyprovisioningpolicy",
   "commands/get-cloudpcconnectivityhistory",
+  "commands/get-cloudpccustomimage",
   "commands/get-cloudpcdiskspace",
+  "commands/get-cloudpcgalleryimage",
   "commands/get-cloudpclaunchdetail",
   "commands/get-cloudpclicensingallotment",
   "commands/get-cloudpcmaintenancewindow",
@@ -28,8 +30,10 @@
   "commands/remove-cloudpcprovisioningpolicy",
   "commands/rename-cloudpc",
   "commands/reset-cloudpclocaladminpassword",
+  "commands/resize-cloudpc",
   "commands/restart-cloudpc",
   "commands/restore-cloudpc",
   "commands/start-cloudpc",
-  "commands/sync-cloudpc"
+  "commands/sync-cloudpc",
+  "commands/update-cloudpcorganizationsetting"
 ]

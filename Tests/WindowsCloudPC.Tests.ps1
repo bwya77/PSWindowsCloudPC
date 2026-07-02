@@ -5,7 +5,9 @@ BeforeDiscovery {
         'Get-CloudPC',
         'Get-CloudPCByProvisioningPolicy',
         'Get-CloudPCConnectivityHistory',
+        'Get-CloudPCCustomImage',
         'Get-CloudPCDiskSpace',
+        'Get-CloudPCGalleryImage',
         'Get-CloudPCLaunchDetail',
         'Get-CloudPCLicensingAllotment',
         'Get-CloudPCMaintenanceWindow',
@@ -29,10 +31,12 @@ BeforeDiscovery {
         'Remove-CloudPCProvisioningPolicy',
         'Rename-CloudPC',
         'Reset-CloudPCLocalAdminPassword',
+        'Resize-CloudPC',
         'Restore-CloudPC',
         'Restart-CloudPC',
         'Start-CloudPC',
-        'Sync-CloudPC'
+        'Sync-CloudPC',
+        'Update-CloudPCOrganizationSetting'
     )
 }
 

@@ -60,6 +60,24 @@ Get-CloudPCServicePlan -Type enterprise
 Get-CloudPCServicePlan -DisplayName 'Cloud PC Enterprise 4vCPU/16GB/128GB'
 ```
 
+Use `Resize-CloudPC` to upgrade or downgrade Cloud PCs to a target service plan. Preview with `-WhatIf` first because the Graph v1.0 resize action is asynchronous and changes the Cloud PC vCPU and storage configuration.
+
+```powershell
+Get-CloudPC -Name 'CPC-brad-*' |
+    Resize-CloudPC -TargetServicePlanName 'Cloud PC Enterprise 4vCPU/16GB/128GB' -WhatIf
+
+$plan = Get-CloudPCServicePlan -DisplayName 'Cloud PC Enterprise 8vCPU/32GB/256GB'
+Get-CloudPC -Type Dedicated |
+    Resize-CloudPC -TargetServicePlan $plan -Force -PassThru
+```
+
+To schedule the action through assigned Cloud PC maintenance windows, add `-UseMaintenanceWindow`. The cmdlet collects pipeline input and creates one Microsoft Graph beta `cloudPcBulkResize` action with `scheduledDuringMaintenanceWindow = true`.
+
+```powershell
+Get-CloudPC -Name 'CPC-ENT-*' |
+    Resize-CloudPC -ServicePlanId '<target-service-plan-id>' -UseMaintenanceWindow -PassThru
+```
+
 ## Organization settings
 
 `Get-CloudPCOrganizationSetting` reads the tenant-wide Windows 365 organization defaults. These include OS version, user account type, Microsoft Endpoint Manager auto-enrollment, single sign-on, and Windows language.
@@ -67,6 +85,24 @@ Get-CloudPCServicePlan -DisplayName 'Cloud PC Enterprise 4vCPU/16GB/128GB'
 ```powershell
 Get-CloudPCOrganizationSetting |
     Select-Object OsVersion,UserAccountType,MEMAutoEnrollEnabled,SingleSignOnEnabled,WindowsLanguage
+```
+
+To update tenant defaults, use `Update-CloudPCOrganizationSetting` with `-WhatIf` first.
+
+```powershell
+Update-CloudPCOrganizationSetting -EnableSingleSignOn $true -WhatIf
+```
+
+## Provisioning images
+
+Use custom and gallery image inventory when reviewing provisioning policy image choices.
+
+```powershell
+Get-CloudPCCustomImage |
+    Format-Table DisplayName,Status,OperatingSystem,OsBuildNumber,SizeGB
+
+Get-CloudPCGalleryImage |
+    Format-Table DisplayName,Status,RecommendedSku,SizeGB,OsVersionNumber
 ```
 
 ## Grace period

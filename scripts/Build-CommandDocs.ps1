@@ -225,7 +225,7 @@ $indexRows = foreach ($command in $commands) {
     $help = Get-CommentHelpBlock -Path $sourceFile
     '| [' + $command.Name + '](/docs/commands/' + (ConvertTo-Slug $command.Name) + ') | ' +
         (ConvertTo-MarkdownTableValue $help.Synopsis) + ' | ' +
-        $(if ($command.Verb -in @('Restart','Invoke','New','Set','Remove','Clear','Start','Stop','Reset','Sync','Rename','Restore')) { 'Action' } else { 'Read' }) + ' |'
+        $(if ($command.Verb -in @('Restart','Invoke','New','Set','Remove','Clear','Start','Stop','Reset','Sync','Rename','Resize','Restore','Update')) { 'Action' } else { 'Read' }) + ' |'
 }
 
 $index = @"

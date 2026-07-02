@@ -47,7 +47,9 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). `Name` reflects the Cloud PC display name, while `ManagedDeviceName` preserves the Intune device name. |
 | `Get-CloudPCConnectivityHistory` | Get Cloud PC connectivity history events from Graph beta by Cloud PC ID or from `Get-CloudPC` pipeline input. |
+| `Get-CloudPCCustomImage` | List custom Cloud PC device images uploaded for provisioning, including OS, version, status, size, and source image resource ID. |
 | `Get-CloudPCDiskSpace` | Report Cloud PC OS disk total, free, used, percent free, and last Intune sync time from the matching managed device inventory record. |
+| `Get-CloudPCGalleryImage` | List Microsoft gallery images available for Cloud PC provisioning, including offer, SKU, support status, recommended SKU, and size. |
 | `Get-CloudPCUsage` | For each Cloud PC, report whether it is `inUse` / `available`. Shared PCs use near-instant `connectivityResult`; dedicated PCs use the real-time remote connection status report for `SignInStatus`, `DaysSinceLastSignIn`, and `LastActiveTime`. |
 | `Get-CloudPCProvisioningPolicy` | List provisioning policies with resolved assignment group names. |
 | `Get-CloudPCByProvisioningPolicy` | One row per policy with a nested `CloudPCs` array and `CloudPCCount`. Answers "which Cloud PCs belong to which policy". |
@@ -72,10 +74,12 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 | `Remove-CloudPCProvisioningPolicy` | Delete a provisioning policy by ID or pipeline object. Supports `-WhatIf`, `-Confirm`, `-Force`, and `-PassThru`. Graph cannot delete policies that are still in use. |
 | `Rename-CloudPC` | Rename a Cloud PC display name through Microsoft Graph v1.0. Supports pipeline input, `-WhatIf`, `-Force`, and `-PassThru`. |
 | `Reset-CloudPCLocalAdminPassword` | Rotate the local admin password for one or more Cloud PCs through the Intune managed device action. Accepts Cloud PC objects, exact names, Cloud PC IDs, or managed device IDs. |
+| `Resize-CloudPC` | Upgrade or downgrade one or more Cloud PCs to a target service plan through Microsoft Graph v1.0. Accepts Cloud PC pipeline input plus target plan ID, exact plan name, or a `Get-CloudPCServicePlan` object. Use `-UseMaintenanceWindow` to create a beta `cloudPcBulkResize` action through assigned Cloud PC maintenance windows. |
 | `Restore-CloudPC` | Restore a Cloud PC from a restore point snapshot. Accepts Cloud PC targets plus `-SnapshotId`, or `WindowsCloudPC.Snapshot` pipeline input. |
 | `Restart-CloudPC` | Reboot one or more Cloud PCs via Graph. Pipeline-friendly, `SupportsShouldProcess` (defaults to `ConfirmImpact='High'`), `-Force` to skip the prompt, `-PassThru` for a result object. |
 | `Start-CloudPC` | Power on one or more Cloud PCs via Graph beta. Accepts Cloud PC objects, exact names, or IDs. Pipeline-friendly, supports `-WhatIf`, `-Force`, and `-PassThru`. |
 | `Sync-CloudPC` | Sync one or more Cloud PCs through the Intune managed device `syncDevice` action. Accepts Cloud PC objects, exact names, Cloud PC IDs, or managed device IDs. |
+| `Update-CloudPCOrganizationSetting` | Updates tenant-wide Windows 365 organization defaults. Supports `-WhatIf`, `-Force`, and `-PassThru`. |
 
 ## Quick start
 
@@ -164,9 +168,26 @@ Get-CloudPCLicensingAllotment |
 Get-CloudPCServicePlan |
     Format-Table DisplayName,Type,VCpuCount,RamGB,StorageGB
 
+# Preview a Cloud PC SKU upgrade or downgrade
+Get-CloudPC -Name 'CPC-brad-*' |
+    Resize-CloudPC -TargetServicePlanName 'Cloud PC Enterprise 4vCPU/16GB/128GB' -WhatIf
+
+# Schedule a resize through assigned Cloud PC maintenance windows
+Resize-CloudPC -CloudPC 'CPC-ENT-0M94O' `
+    -ServicePlanId '<target-service-plan-id>' `
+    -UseMaintenanceWindow `
+    -PassThru
+
 # Review tenant-wide Cloud PC organization defaults
 Get-CloudPCOrganizationSetting |
     Select-Object OsVersion,UserAccountType,MEMAutoEnrollEnabled,SingleSignOnEnabled,WindowsLanguage
+
+# Preview a tenant-wide organization setting update
+Update-CloudPCOrganizationSetting -EnableSingleSignOn $true -WhatIf
+
+# List provisioning images
+Get-CloudPCCustomImage | Format-Table DisplayName,Status,OperatingSystem,OsBuildNumber
+Get-CloudPCGalleryImage | Format-Table DisplayName,Status,RecommendedSku,SizeGB
 
 # Retrieve and parse a Graph Cloud PC report stream
 $pc = Get-CloudPC | Select-Object -First 1

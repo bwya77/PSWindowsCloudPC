@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Resize-CloudPC` upgrades or downgrades Cloud PCs through the Microsoft Graph
+  v1.0 `cloudPC: resize` action. It accepts Cloud PC pipeline input, target
+  service plan IDs, exact service plan names, or `Get-CloudPCServicePlan`
+  objects, and supports `-WhatIf`, `-Force`, and `-PassThru`. Graph response
+  body details are included in failures so service conflicts show their reason.
+- `Resize-CloudPC -UseMaintenanceWindow` submits a Microsoft Graph beta
+  `cloudPcBulkResize` action with `scheduledDuringMaintenanceWindow = true` so
+  one or more Cloud PCs can be resized through assigned maintenance windows.
 
 ## [0.1.24] - 2026-06-22
 ## [0.1.23] - 2026-06-19
@@ -16,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Get-CloudPCOrganizationSetting` reads tenant-wide Windows 365 organization
   defaults such as OS version, user account type, MEM auto-enrollment, single
   sign-on, Windows language, and raw Graph data.
+- `Get-CloudPCCustomImage` lists custom Cloud PC device images from Microsoft
+  Graph beta with OS, version, status, size, expiration, and source resource ID.
+- `Get-CloudPCGalleryImage` lists Microsoft gallery images available for Cloud
+  PC provisioning, including offer, SKU, recommended SKU, support status, size,
+  and OS version.
+- `Update-CloudPCOrganizationSetting` updates tenant-wide Cloud PC organization
+  defaults through Microsoft Graph beta and supports `-WhatIf`, `-Force`, and
+  `-PassThru`.
 - `Invoke-CloudPCEndGracePeriod` ends the grace period for Cloud PCs through
   Microsoft Graph beta. `-All` targets Cloud PCs returned by
   `Get-CloudPC -ProvisioningStatus inGracePeriod`.
