@@ -12,6 +12,7 @@ Connects to Microsoft Graph with the scopes required by WindowsCloudPC.
 
 Idempotent: if an existing Graph session already covers the required scopes, no prompt
 is shown. Use -Force to re-authenticate (e.g. to add scopes or switch accounts).
+Connect-Windows365 is exported as an alias for this command.
 
 ## Syntax
 
@@ -42,6 +43,12 @@ Connect-CloudPC
 
 ```powershell
 Connect-CloudPC -AdditionalScopes 'CloudPC.ReadWrite.All'
+```
+
+## Example 3
+
+```powershell
+Connect-Windows365
 ```
 
 

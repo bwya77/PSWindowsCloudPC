@@ -38,6 +38,10 @@ BeforeDiscovery {
         'Sync-CloudPC',
         'Update-CloudPCOrganizationSetting'
     )
+
+    $script:PublicAliases = @(
+        'Connect-Windows365'
+    )
 }
 
 Describe 'WindowsCloudPC module' {
@@ -74,9 +78,20 @@ Describe 'WindowsCloudPC module' {
 
     Context 'Exports' {
         It 'exports exactly the expected public functions' {
-            $exported = (Get-Command -Module WindowsCloudPC | Sort-Object Name).Name
+            $exported = (Get-Command -Module WindowsCloudPC -CommandType Function | Sort-Object Name).Name
             $expected = $PublicFunctions | Sort-Object
             $exported | Should -Be $expected
+        }
+
+        It 'exports exactly the expected aliases' {
+            $exported = (Get-Command -Module WindowsCloudPC -CommandType Alias | Sort-Object Name).Name
+            $expected = $PublicAliases | Sort-Object
+            $exported | Should -Be $expected
+        }
+
+        It 'maps Connect-Windows365 to Connect-CloudPC' {
+            $alias = Get-Alias -Name Connect-Windows365 -ErrorAction Stop
+            $alias.Definition | Should -Be 'Connect-CloudPC'
         }
     }
 

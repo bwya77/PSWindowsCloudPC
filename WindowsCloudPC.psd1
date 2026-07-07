@@ -51,7 +51,9 @@
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
-    AliasesToExport      = @()
+    AliasesToExport      = @(
+        'Connect-Windows365'
+    )
     PrivateData          = @{
         PSData = @{
             Tags         = @('Windows365','CloudPC','W365','Intune','MicrosoftGraph','AVD')

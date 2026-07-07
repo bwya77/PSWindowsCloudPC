@@ -17,8 +17,8 @@ Early - read-only queries plus write actions for power-on, reboot, sync, local a
 ## Requirements
 
 - PowerShell 7+
-- `Microsoft.Graph.Authentication` module (auto-imported by `Connect-CloudPC`)
-- Delegated Graph scopes (requested automatically by `Connect-CloudPC`):
+- `Microsoft.Graph.Authentication` module (auto-imported by `Connect-CloudPC` or its `Connect-Windows365` alias)
+- Delegated Graph scopes (requested automatically by `Connect-CloudPC` or `Connect-Windows365`):
   - `CloudPC.Read.All`
   - `DeviceManagementManagedDevices.Read.All`
   - `User.Read.All`
@@ -43,7 +43,7 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 
 | Function | Purpose |
 | --- | --- |
-| `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. |
+| `Connect-CloudPC` | Idempotent Graph sign-in with the right scopes. Alias: `Connect-Windows365`. |
 | `Export-CloudPCProvisioningPolicy` | Export a provisioning policy to reusable JSON with a create-safe body and assignment targets. |
 | `Get-CloudPC` | List Cloud PCs (filter by policy, user, or type). `Name` reflects the Cloud PC display name, while `ManagedDeviceName` preserves the Intune device name. |
 | `Get-CloudPCConnectivityHistory` | Get Cloud PC connectivity history events from Graph beta by Cloud PC ID or from `Get-CloudPC` pipeline input. |
@@ -85,6 +85,8 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 
 ```powershell
 Connect-CloudPC
+# or
+Connect-Windows365
 
 # Everything in the tenant
 Get-CloudPCUsage | Format-Table CloudPcName,ProvisioningType,UsageStatus,SignInStatus,DaysSinceLastSignIn,CurrentUserDisplayName,SessionStart

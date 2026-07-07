@@ -35,9 +35,11 @@ Import-Module .\PSWindowsCloudPC\WindowsCloudPC.psd1 -Force
 
 ```powershell
 Connect-CloudPC
+# or
+Connect-Windows365
 ```
 
-`Connect-CloudPC` requests the read scopes used across the module. Commands that perform write actions, such as restart, reprovision, and snapshot creation, request `CloudPC.ReadWrite.All` only when needed.
+`Connect-CloudPC` and its `Connect-Windows365` alias request the read scopes used across the module. Commands that perform write actions, such as restart, reprovision, and snapshot creation, request `CloudPC.ReadWrite.All` only when needed.
 
 If you already connected to Microsoft Graph in the same session, the module reuses that connection when the required scopes are present.
 

@@ -6,6 +6,7 @@ function Connect-CloudPC {
     .DESCRIPTION
         Idempotent: if an existing Graph session already covers the required scopes, no prompt
         is shown. Use -Force to re-authenticate (e.g. to add scopes or switch accounts).
+        Connect-Windows365 is exported as an alias for this command.
 
     .PARAMETER AdditionalScopes
         Extra Graph scopes to request on top of the module defaults.
@@ -18,6 +19,9 @@ function Connect-CloudPC {
 
     .EXAMPLE
         Connect-CloudPC -AdditionalScopes 'CloudPC.ReadWrite.All'
+
+    .EXAMPLE
+        Connect-Windows365
     #>
     [CmdletBinding()]
     param(

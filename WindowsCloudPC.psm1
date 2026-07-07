@@ -8,4 +8,6 @@ foreach ($file in @($Private + $Public)) {
     catch { Write-Error "Failed to import $($file.FullName): $_" }
 }
 
-Export-ModuleMember -Function $Public.BaseName
+Set-Alias -Name Connect-Windows365 -Value Connect-CloudPC
+
+Export-ModuleMember -Function $Public.BaseName -Alias Connect-Windows365
